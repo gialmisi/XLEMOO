@@ -9,6 +9,8 @@ license = "MIT"
 python = "^3.7 <3.10"
 desdeo-emo = { path = "/home/kilo/workspace/desdeo-emo", develop = true }
 jupyterlab = "^3.3.2"
+matplotlib = "^3.5.1"
+scikit-learn = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 
