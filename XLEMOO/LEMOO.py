@@ -74,7 +74,7 @@ class MLParams:
 
 @dataclass
 class LEMParams:
-    n_total_itarations: int
+    n_total_iterations: int
     n_ea_gen_per_iter: int
     n_ml_gen_per_iter: int
     use_ml: bool
@@ -102,8 +102,8 @@ class LEMOO:
             pop_size=self._ea_params.population_size,
         )
         self._population = SurrogatePopulation(
-            problem,
-            ea_params.population_size,
+            self._problem,
+            self._ea_params.population_size,
             initial_population,
             self._ea_params.cross_over_op,
             self._ea_params.mutation_op,
@@ -112,7 +112,22 @@ class LEMOO:
 
         self._population_history = []
 
-        return
+    def reset_population(self):
+        self._population_history = []
+        initial_population = create_new_individuals(
+            self._ea_params.population_init_design,
+            self._problem,
+            pop_size=self._ea_params.population_size,
+        )
+
+        self._population = SurrogatePopulation(
+            self._problem,
+            self._ea_params.population_size,
+            initial_population,
+            self._ea_params.cross_over_op,
+            self._ea_params.mutation_op,
+            None,
+        )
 
     def darwinian_mode(self) -> np.ndarray:
         # compute the fitnesses of the current population
@@ -168,6 +183,7 @@ class LEMOO:
             candidate = np.random.rand(len(ranges)) * ranges + lower_bounds
 
             if classifier.predict(np.atleast_2d(candidate))[0] == 1:
+                print("found!")
                 new_individuals.append(candidate)
                 n_found += 1
 
@@ -180,8 +196,35 @@ class LEMOO:
         self._population.add(new_individuals)
         return
 
-    def run(self):
-        return
+    def run(self) -> List[Population]:
+        # save initial population
+        self._population_history.append(copy.copy(self._population))
+
+        for _ in range(self._lem_params.n_total_iterations):
+            # Darwinian mode
+            for _ in range(self._lem_params.n_ea_gen_per_iter):
+                if not self._lem_params.use_ea:
+                    break
+                new_ea_individuals = self.darwinian_mode()
+                self.update_population(new_ea_individuals)
+                self._population_history.append(copy.copy(self._population))
+
+            # Learning mode
+            for _ in range(self._lem_params.n_ml_gen_per_iter):
+                if not self._lem_params.use_ml:
+                    break
+                print("starting learning mode")
+                new_ml_individuals = self.learning_mode()
+                self.update_population(new_ml_individuals)
+                self._population_history.append(copy.copy(self._population))
+
+        # Finish with Darwinian mode``
+        for _ in range(self._lem_params.n_ea_gen_per_iter):
+            new_ea_individuals = self.darwinian_mode()
+            self.update_population(new_ea_individuals)
+            self._population_history.append(copy.copy(self._population))
+
+        return self._population_history
 
 
 if __name__ == "__main__":

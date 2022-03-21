@@ -16,7 +16,16 @@ from desdeo_emo.selection import TournamentSelection
 
 # needs to be renamed, otherwise pytest thinks it is a test to be run
 from desdeo_problem.testproblems import test_problem_builder as problem_builder
-from imodels import C45TreeClassifier
+
+
+class SpoofML:
+    """Does absolutely nothing, do not trust!"""
+
+    def fit(self, X: np.ndarray, Y: np.ndarray):
+        return self
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        return np.ones(X.shape[0])
 
 
 def test_subclasses():
@@ -26,16 +35,16 @@ def test_subclasses():
 
 
 def test_init():
-    problem = problem_builder("DTLZ2", 5, 3)
+    problem = problem_builder("DTLZ2", 3, 2)
     xover_op = SBX_xover()
     mutation_op = BP_mutation(
         problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds()
     )
     selection_op = TournamentSelection(None, tournament_size=2)
 
-    lem_params = LEMParams(10, 20, 1, True, True, naive_sum)
+    lem_params = LEMParams(2, 50, 1, True, True, naive_sum)
     ea_params = EAParams(50, xover_op, mutation_op, selection_op, "RandomDesign")
-    ml_params = MLParams(0.3, 0.3, C45TreeClassifier(), single_objective)
+    ml_params = MLParams(0.3, 0.3, SpoofML(), naive_sum)
 
     lemoo = LEMOO(problem, lem_params, ea_params, ml_params)
 
@@ -86,4 +95,49 @@ def test_learning_mode(toy_model):
 
     npt.assert_raises(
         AssertionError, npt.assert_allclose, old_individuals, new_individuals
+    )
+
+
+def test_run(toy_model):
+    # history should be empty
+    assert len(toy_model._population_history) == 0
+
+    # run
+    history = toy_model.run()
+
+    # 1 + is initial iteration
+    should_be = 1 + (
+        toy_model._lem_params.n_total_iterations
+        * (
+            toy_model._lem_params.n_ea_gen_per_iter
+            + toy_model._lem_params.n_ml_gen_per_iter
+        )
+        + toy_model._lem_params.n_ea_gen_per_iter
+    )
+
+    assert should_be == len(history)
+
+
+def test_reset_population(toy_model):
+    # history should be empty
+    assert len(toy_model._population_history) == 0
+
+    history = toy_model.run()
+
+    # history non-empty
+    assert len(history) > 0
+    old_individuals = toy_model._population.individuals
+
+    # reset population and history
+    toy_model.reset_population()
+
+    # history should be empty
+    assert len(toy_model._population_history) == 0
+
+    # population should be changed
+    npt.assert_raises(
+        AssertionError,
+        npt.assert_allclose,
+        old_individuals,
+        toy_model._population.individuals,
     )
