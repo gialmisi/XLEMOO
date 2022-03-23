@@ -6,16 +6,31 @@ from sklearn.datasets import load_iris
 from sklearn import tree
 import sklearn
 import numpy as np
-from typing import List
+import numpy.testing as npt
+from typing import List, Tuple
 
 
 @pytest.fixture
-def dummy_rules() -> List[TreePath]:
+def dummy_paths_and_limits() -> Tuple[List[TreePath], List[Tuple[float, float]]]:
     path_1 = TreePath(
         rules=[[1, "gte", 0.6]], impurity=0.5, samples=33.0, classification=0
     )
+    path_2 = TreePath(
+        rules=[[1, "lt", 0.6], [2, "gte", 1.5]],
+        impurity=0.33,
+        samples=15.0,
+        classification=1,
+    )
+    path_3 = TreePath(
+        rules=[[1, "lt", 0.6], [2, "lt", 1.5], [3, "gte", 3.3]],
+        impurity=0.5,
+        samples=22.0,
+        classification=2,
+    )
 
-    return [path_1]
+    limits = [(0, 2), (1, 3), (2, 4)]
+
+    return [path_1, path_2, path_2, path_3], limits
 
 
 @pytest.fixture
@@ -42,5 +57,31 @@ def test_find_all_paths(dummy_tree):
 
 
 @pytest.mark.tree
-def test_instantiate_rules(dummy_rules):
-    assert True
+def test_instantiate_rules(dummy_paths_and_limits):
+    dummy_paths, limits = dummy_paths_and_limits
+    n_samples = 100
+
+    # check that empty array returned when no matching classification is found
+    res = instantiate_tree_rules(dummy_paths, len(limits), limits, n_samples, 10)
+    assert res.shape == (1, 0, 1)
+
+    # matching path is found
+    res = instantiate_tree_rules(dummy_paths, len(limits), limits, n_samples, 1)
+
+    print(res)
+    """
+    assert res.shape[0] == 2
+    assert res.shape[1] == len(limits)
+
+    assert res[0][0] < 0.6
+    assert res[0][1] >= 1.5
+
+    # check with just one rule per classification
+    res = instantiate_tree_rules(dummy_paths, len(limits), limits, n_samples, 2)
+    assert res.shape[0] == 1
+    assert res.shape[1] == len(limits)
+
+    assert res[0][0] < 0.6
+    assert res[0][1] < 1.5
+    assert res[0][2] >= 3.3
+    """

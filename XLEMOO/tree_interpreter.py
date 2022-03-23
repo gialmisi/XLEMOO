@@ -68,9 +68,49 @@ def find_all_paths(tree: "sklearn.tree") -> List[TreePath]:
 
 
 def instantiate_tree_rules(
-    rules: List[TreePath],
+    paths: List[TreePath],
     n_features: int,
     feature_limits: List[Tuple[float, float]],
     n_samples: int,
+    desired_classification: int,
 ) -> np.ndarray:
-    return np.zeros(3)
+    # find out how many of the paths have the desired classification
+    n_matching_paths = sum(
+        [1 if p["classification"] == desired_classification else 0 for p in paths]
+    )
+
+    if n_matching_paths == 0:
+        # no paths found with desired classification, return empty array
+        return np.atleast_3d([])
+
+    # for each path, create an array with n_features and set each element according to the bounds
+    limits = np.array(feature_limits)
+    instantiated = np.atleast_3d(
+        np.random.uniform(
+            limits[:, 0], limits[:, 1], (n_matching_paths, n_samples, n_features)
+        )
+    )
+
+    # for each path with the desired classification, start populating an array of NaN with attributes according to the rules
+    path_i = 0
+    for p in paths:
+        if p["classification"] == desired_classification:
+            for rule in p["rules"]:
+                # features are 1-indexed, henche, -1
+                feature = rule[0] - 1
+                comp = rule[1]
+                threshold = rule[2]
+
+                instantiated[path_i][:][feature] = (
+                    np.random.uniform(threshold, feature_limits[feature][1], n_samples)
+                    if comp == "gte"
+                    else np.random.uniform(
+                        feature_limits[feature][0], threshold, n_samples
+                    )
+                )
+
+            path_i += 1
+
+    # set the attributes according to the rule and according to the feature limits
+    # return the as many arrays required by n_samples (split the distribution according to the weighted samples of each path)
+    return instantiated
