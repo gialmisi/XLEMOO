@@ -68,20 +68,19 @@ def test_instantiate_rules(dummy_paths_and_limits):
     # matching path is found
     res = instantiate_tree_rules(dummy_paths, len(limits), limits, n_samples, 1)
 
-    print(res)
-    """
     assert res.shape[0] == 2
-    assert res.shape[1] == len(limits)
+    assert res.shape[1] == n_samples
+    assert res.shape[2] == len(limits)
 
-    assert res[0][0] < 0.6
-    assert res[0][1] >= 1.5
+    assert all(res[0, :, 0] < 0.6)
+    assert all(res[0, :, 1] >= 1.5)
 
     # check with just one rule per classification
     res = instantiate_tree_rules(dummy_paths, len(limits), limits, n_samples, 2)
     assert res.shape[0] == 1
-    assert res.shape[1] == len(limits)
+    assert res.shape[1] == n_samples
+    assert res.shape[2] == len(limits)
 
-    assert res[0][0] < 0.6
-    assert res[0][1] < 1.5
-    assert res[0][2] >= 3.3
-    """
+    assert all(res[0, :, 0] < 0.6)
+    assert all(res[0, :, 1] < 1.5)
+    assert all(res[0, :, 2] >= 3.3)
