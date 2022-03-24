@@ -14,6 +14,8 @@ from desdeo_problem.problem import MOProblem
 
 import numpy as np
 
+from XLEMOO.tree_interpreter import find_all_paths, instantiate_tree_rules
+
 
 class CrossOverOP(ABC):
     @abstractmethod
@@ -170,6 +172,29 @@ class LEMOO:
         # based on the trained model, generate new individuals and combine them with the existing H sample
         # TODO: do this in a smarter way utilizing the model
         n_individuals_needed = len(sorted_ids) - len(h_group_ids)
+
+        paths = find_all_paths(classifier)
+
+        instantiated = instantiate_tree_rules(
+            paths,
+            self._problem.n_of_variables,
+            self._problem.get_variable_bounds(),
+            n_individuals_needed,
+            1,
+        )
+
+        instantiated = instantiated.reshape((-1, instantiated.shape[2]))
+
+        selected_individuals = instantiated[
+            np.random.choice(
+                instantiated.shape[0], n_individuals_needed, replace=False
+            ),
+            :,
+        ]
+
+        final_individuals = np.vstack((h_sample, selected_individuals))
+
+        """
         n_found = 0
 
         lower_bounds = self._problem.get_variable_lower_bounds()
@@ -188,6 +213,7 @@ class LEMOO:
                 n_found += 1
 
         final_individuals = np.vstack((h_sample, np.array(new_individuals)))
+        """
 
         return final_individuals
 

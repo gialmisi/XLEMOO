@@ -13,6 +13,7 @@ from XLEMOO.LEMOO import (
 from XLEMOO.fitness_indicators import naive_sum, single_objective
 from desdeo_emo.recombination import BP_mutation, SBX_xover
 from desdeo_emo.selection import TournamentSelection
+from sklearn.tree import DecisionTreeClassifier
 
 # needs to be renamed, otherwise pytest thinks it is a test to be run
 from desdeo_problem.testproblems import test_problem_builder as problem_builder
@@ -44,7 +45,7 @@ def test_init():
 
     lem_params = LEMParams(2, 50, 1, True, True, naive_sum)
     ea_params = EAParams(50, xover_op, mutation_op, selection_op, "RandomDesign")
-    ml_params = MLParams(0.3, 0.3, SpoofML(), naive_sum)
+    ml_params = MLParams(0.3, 0.3, DecisionTreeClassifier(), naive_sum)
 
     lemoo = LEMOO(problem, lem_params, ea_params, ml_params)
 
@@ -86,6 +87,9 @@ def test_darwin_mode(toy_model):
         AssertionError, npt.assert_allclose, old_individuals, new_individuals
     )
 
+    assert len(new_individuals.shape) == 2
+    assert new_individuals.shape[0] == toy_model._ea_params.population_size
+
 
 def test_learning_mode(toy_model):
     # test that the learning step return a new population that differs from the previous one
@@ -96,6 +100,9 @@ def test_learning_mode(toy_model):
     npt.assert_raises(
         AssertionError, npt.assert_allclose, old_individuals, new_individuals
     )
+
+    assert len(new_individuals.shape) == 2
+    assert new_individuals.shape[0] == toy_model._ea_params.population_size
 
 
 def test_run(toy_model):
