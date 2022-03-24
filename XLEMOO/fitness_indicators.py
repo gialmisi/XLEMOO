@@ -1,4 +1,5 @@
 from desdeo_emo.population import Population
+from desdeo_tools.scalarization.ASF import ASFBase
 import numpy as np
 
 
@@ -22,3 +23,7 @@ def must_sum_to_one(population: Population) -> np.ndarray:
 def single_objective(population: Population, obj_index: int = 0) -> np.ndarray:
     objective_values = population.problem.evaluate(population.individuals).objectives
     return np.atleast_2d(objective_values[:, obj_index]).T
+
+
+def asf_wrapper(population: Population, asf: ASFBase) -> np.ndarray:
+    pass

@@ -43,7 +43,7 @@ def find_all_paths(tree: "sklearn.tree") -> List[TreePath]:
         # check if current node is a leaf, if true, do not recurse
         if tree.tree_.children_left[node_id] == tree.tree_.children_right[node_id]:
             # find classificaiton
-            classification = np.argmax(tree.tree_.value[node_id])
+            classification = tree.classes_[np.argmax(tree.tree_.value[node_id])]
             entry = {}
             entry["rules"] = rules
             entry["samples"] = tree.tree_.weighted_n_node_samples[node_id]
@@ -139,14 +139,14 @@ def instantiate_tree_rules(
         if p["classification"] == desired_classification:
             for rule in p["rules"]:
                 # features are 1-indexed, henche, -1
-                feature = rule[0] - 1
+                feature = rule[0]
                 comp = rule[1]
                 threshold = rule[2]
 
                 # set the attributes according to the rule and according to the feature limits
                 instantiated[path_i, :, feature] = (
                     np.random.uniform(threshold, feature_limits[feature][1], n_samples)
-                    if comp == "gte"
+                    if comp == "gt"
                     else np.random.uniform(
                         feature_limits[feature][0], threshold, n_samples
                     )

@@ -96,6 +96,7 @@ class LEMOO:
         self._lem_params: LEMParams = lem_params
         self._ea_params: EAParams = ea_params
         self._ml_params: MLParams = ml_params
+        self.current_ml_model: MLModel = ml_params.ml_model
 
         # initialize the population and the evolutionary operators
         initial_population = create_new_individuals(
@@ -134,7 +135,6 @@ class LEMOO:
     def darwinian_mode(self) -> np.ndarray:
         # compute the fitnesses of the current population
         fitness = self._lem_params.fitness_indicator(self._population)
-        print(f"fitness: {fitness}")
 
         # select individuals to mate
         to_mate = self._ea_params.selection_op.do(self._population, fitness)
@@ -163,11 +163,14 @@ class LEMOO:
         h_sample = self._population.individuals[h_group_ids]
         l_sample = self._population.individuals[l_group_ids]
 
-        Y = np.hstack((np.ones(len(h_sample)), -np.ones(len(h_sample))))
+        Y = np.hstack(
+            (np.ones(len(h_sample), dtype=int), -np.ones(len(h_sample), dtype=int))
+        )
         X = np.vstack((h_sample, l_sample))
 
         # create and train a classifier on the H and L samples
         classifier = self._ml_params.ml_model.fit(X, Y)
+        self.current_ml_model = classifier
 
         # based on the trained model, generate new individuals and combine them with the existing H sample
         # TODO: do this in a smarter way utilizing the model
@@ -175,6 +178,7 @@ class LEMOO:
 
         paths = find_all_paths(classifier)
 
+        # do this until enough fit individuals are found
         instantiated = instantiate_tree_rules(
             paths,
             self._problem.n_of_variables,
@@ -194,6 +198,8 @@ class LEMOO:
 
         final_individuals = np.vstack((h_sample, selected_individuals))
 
+        tmp = classifier.predict(final_individuals)
+
         """
         n_found = 0
 
@@ -208,7 +214,7 @@ class LEMOO:
             candidate = np.random.rand(len(ranges)) * ranges + lower_bounds
 
             if classifier.predict(np.atleast_2d(candidate))[0] == 1:
-                print("found!")
+                print("found!")Stup
                 new_individuals.append(candidate)
                 n_found += 1
 
@@ -246,6 +252,8 @@ class LEMOO:
 
         # Finish with Darwinian mode``
         for _ in range(self._lem_params.n_ea_gen_per_iter):
+            if not self._lem_params.use_ea:
+                break
             new_ea_individuals = self.darwinian_mode()
             self.update_population(new_ea_individuals)
             self._population_history.append(copy.copy(self._population))

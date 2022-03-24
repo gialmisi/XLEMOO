@@ -13,24 +13,30 @@ from typing import List, Tuple
 @pytest.fixture
 def dummy_paths_and_limits() -> Tuple[List[TreePath], List[Tuple[float, float]]]:
     path_1 = TreePath(
-        rules=[[1, "gte", 0.6]], impurity=0.5, samples=33.0, classification=0
+        rules=[[0, "gt", 0.6]], impurity=0.5, samples=33.0, classification=0
     )
     path_2 = TreePath(
-        rules=[[1, "lt", 0.6], [2, "gte", 1.5]],
+        rules=[[0, "lte", 0.6], [1, "gt", 1.5]],
         impurity=0.33,
         samples=15.0,
         classification=1,
     )
     path_3 = TreePath(
-        rules=[[1, "lt", 0.6], [2, "lt", 1.5], [3, "gte", 3.3]],
+        rules=[[0, "lte", 0.6], [1, "lte", 1.5], [2, "gt", 3.3]],
         impurity=0.5,
         samples=22.0,
+        classification=2,
+    )
+    path_4 = TreePath(
+        rules=[[0, "lte", 0.7097921669483185], [0, "gt", 0.2519140988588333]],
+        impurity=0.3,
+        samples=33.0,
         classification=2,
     )
 
     limits = [(0, 2), (1, 3), (2, 4)]
 
-    return [path_1, path_2, path_2, path_3], limits
+    return [path_1, path_2, path_2, path_3, path_4], limits
 
 
 @pytest.fixture
@@ -77,7 +83,7 @@ def test_instantiate_rules(dummy_paths_and_limits):
 
     # check with just one rule per classification
     res = instantiate_tree_rules(dummy_paths, len(limits), limits, n_samples, 2)
-    assert res.shape[0] == 1
+    assert res.shape[0] == 2
     assert res.shape[1] == n_samples
     assert res.shape[2] == len(limits)
 
