@@ -164,7 +164,7 @@ class LEMOO:
         l_sample = self._population.individuals[l_group_ids]
 
         Y = np.hstack(
-            (np.ones(len(h_sample), dtype=int), -np.ones(len(h_sample), dtype=int))
+            (np.ones(len(h_sample), dtype=int), -np.ones(len(l_sample), dtype=int))
         )
         X = np.vstack((h_sample, l_sample))
 

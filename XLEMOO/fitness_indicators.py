@@ -25,5 +25,12 @@ def single_objective(population: Population, obj_index: int = 0) -> np.ndarray:
     return np.atleast_2d(objective_values[:, obj_index]).T
 
 
-def asf_wrapper(population: Population, asf: ASFBase) -> np.ndarray:
-    pass
+def asf_wrapper(asf: ASFBase, asf_kwargs: dict) -> np.ndarray:
+    def fun(population):
+        objective_values = population.problem.evaluate(
+            population.individuals
+        ).objectives
+        asf_values = asf(objective_values, **asf_kwargs)
+        return np.atleast_2d(asf_values).T
+
+    return fun

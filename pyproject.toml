@@ -14,6 +14,7 @@ scikit-learn = "^1.0.2"
 rulefit = "^0.3.1"
 imodels = "^1.2.5"
 pytest = "^7.1.1"
+desdeo-tools = {path="/home/kilo/workspace/desdeo-tools", develop = true}
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
