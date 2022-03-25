@@ -57,6 +57,12 @@ class MLModel(ABC):
         pass
 
 
+class DummyPopulation:
+    def __init__(self, individuals: np.ndarray, problem: MOProblem):
+        self.individuals = individuals
+        self.problem = problem
+
+
 @dataclass
 class EAParams:
     population_size: int
@@ -82,6 +88,7 @@ class LEMParams:
     use_ml: bool
     use_ea: bool
     fitness_indicator: Callable[[Population], np.ndarray]
+    past_gens_to_consider: int
 
 
 class LEMOO:
@@ -150,7 +157,24 @@ class LEMOO:
 
     def learning_mode(self) -> np.ndarray:
         # sort individuals in the current population according to their fitness value
-        fitness = self._ml_params.ml_fitness(self._population)
+        if self._lem_params.past_gens_to_consider > len(self._population_history):
+            print(
+                f"The number of past generations to consider ({self._lem_params.past_gens_to_consider}) is greater than the number of past generations ({len(self._population_history)}. Using {len(self._population_history)} past populations instead."
+            )
+            n_to_consider = len(self._population_history)
+        else:
+            n_to_consider = self._lem_params.past_gens_to_consider
+
+        fitness = (
+            np.array(
+                [
+                    self._ml_params.ml_fitness(p)
+                    for p in self._population_history[-n_to_consider:]
+                ]
+            )
+            .squeeze()
+            .reshape(-1)
+        )
         sorted_ids = np.squeeze(np.argsort(fitness, axis=0))
 
         # formulate the H and L groups
@@ -160,8 +184,12 @@ class LEMOO:
         h_group_ids = sorted_ids[0:h_split_id]
         l_group_ids = sorted_ids[-l_split_id:]
 
-        h_sample = self._population.individuals[h_group_ids]
-        l_sample = self._population.individuals[l_group_ids]
+        individuals = np.vstack(
+            [p.individuals for p in self._population_history[-n_to_consider:]]
+        )
+
+        h_sample = individuals[h_group_ids]
+        l_sample = individuals[l_group_ids]
 
         Y = np.hstack(
             (np.ones(len(h_sample), dtype=int), -np.ones(len(l_sample), dtype=int))
@@ -173,8 +201,8 @@ class LEMOO:
         self.current_ml_model = classifier
 
         # based on the trained model, generate new individuals and combine them with the existing H sample
-        # TODO: do this in a smarter way utilizing the model
-        n_individuals_needed = len(sorted_ids) - len(h_group_ids)
+        # n_individuals_needed = len(sorted_ids) - len(h_group_ids)
+        n_individuals_needed = self._ea_params.population_size
 
         paths = find_all_paths(classifier)
 
@@ -196,30 +224,8 @@ class LEMOO:
             :,
         ]
 
-        final_individuals = np.vstack((h_sample, selected_individuals))
-
-        tmp = classifier.predict(final_individuals)
-
-        """
-        n_found = 0
-
-        lower_bounds = self._problem.get_variable_lower_bounds()
-        upper_bounds = self._problem.get_variable_upper_bounds()
-
-        ranges = upper_bounds - lower_bounds
-
-        new_individuals = []
-
-        while n_found < n_individuals_needed:
-            candidate = np.random.rand(len(ranges)) * ranges + lower_bounds
-
-            if classifier.predict(np.atleast_2d(candidate))[0] == 1:
-                print("found!")Stup
-                new_individuals.append(candidate)
-                n_found += 1
-
-        final_individuals = np.vstack((h_sample, np.array(new_individuals)))
-        """
+        # final_individuals = np.vstack((h_sample, selected_individuals))
+        final_individuals = selected_individuals
 
         return final_individuals
 
@@ -227,6 +233,34 @@ class LEMOO:
         self._population.delete(np.arange(len(self._population.individuals)))
         self._population.add(new_individuals)
         return
+
+    def cherry_pick(self, ml_individuals: np.ndarray) -> np.ndarray:
+        ea_individuals = self._population.individuals
+
+        individuals = np.vstack((ea_individuals, ml_individuals))
+
+        ea_fitness = self._lem_params.fitness_indicator(self._population)
+        ml_fitness = self._lem_params.fitness_indicator(
+            DummyPopulation(ml_individuals, self._problem)
+        )
+        fitness = np.vstack((ea_fitness, ml_fitness))
+
+        sorted_ids = np.argsort(fitness, axis=0)
+
+        # how many from ml population and how many from ea population were chosen
+        from_ea = (
+            sorted_ids[: self._ea_params.population_size]
+            < self._ea_params.population_size
+        ).sum()
+        from_ml = self._ea_params.population_size - from_ea
+
+        print(f"Cherry pick results: EA: {from_ea}; ML: {from_ml}.")
+
+        cherries = np.squeeze(
+            individuals[sorted_ids[: self._ea_params.population_size]]
+        )
+
+        return cherries
 
     def run(self) -> List[Population]:
         # save initial population
@@ -247,7 +281,8 @@ class LEMOO:
                     break
                 print("starting learning mode")
                 new_ml_individuals = self.learning_mode()
-                self.update_population(new_ml_individuals)
+                cherries = self.cherry_pick(new_ml_individuals)
+                self.update_population(cherries)
                 self._population_history.append(copy.copy(self._population))
 
         # Finish with Darwinian mode``

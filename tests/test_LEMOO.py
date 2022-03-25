@@ -43,7 +43,7 @@ def test_init():
     )
     selection_op = TournamentSelection(None, tournament_size=2)
 
-    lem_params = LEMParams(2, 50, 1, True, True, naive_sum)
+    lem_params = LEMParams(2, 50, 1, True, True, naive_sum, past_gens_to_consider=1)
     ea_params = EAParams(50, xover_op, mutation_op, selection_op, "RandomDesign")
     ml_params = MLParams(0.3, 0.3, DecisionTreeClassifier(), naive_sum)
 
@@ -93,6 +93,7 @@ def test_darwin_mode(toy_model):
 
 def test_learning_mode(toy_model):
     # test that the learning step return a new population that differs from the previous one
+    toy_model._population_history = [toy_model._population]
     old_individuals = toy_model._population.individuals
 
     new_individuals = toy_model.learning_mode()
@@ -148,3 +149,14 @@ def test_reset_population(toy_model):
         old_individuals,
         toy_model._population.individuals,
     )
+
+
+def test_cherry_pick(toy_model):
+    # run the model just to have a population
+    toy_model.run()
+
+    ml_individuals = toy_model._population_history[0].individuals
+
+    res = toy_model.cherry_pick(ml_individuals)
+
+    assert res.shape[0] == toy_model._ea_params.population_size
