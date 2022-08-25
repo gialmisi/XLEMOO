@@ -48,6 +48,18 @@ class SelectionOP(ABC):
 SelectionOP.register(TournamentSelection)
 
 
+class ElitismOP(ABC):
+    @abstractmethod
+    def do(
+        self,
+        pop1: Population,
+        pop1_fitness: np.ndarray,
+        pop2: Population,
+        pop2_fitness: np.ndarray,
+    ) -> np.ndarray:
+        pass
+
+
 class MLModel(ABC):
     @abstractmethod
     def fit(self, X: np.ndarray, Y: np.ndarray):
@@ -140,18 +152,17 @@ class LEMOO:
         )
 
     def darwinian_mode(self) -> np.ndarray:
-        # compute the fitnesses of the current population
+        # Evaluation: compute the fitnesses of the current population
         fitness = self._lem_params.fitness_indicator(self._population)
 
-        # select individuals to mate
+        # Selection: select individuals to mate and mate
         to_mate = self._ea_params.selection_op.do(self._population, fitness)
-
-        # mate
         new_individuals = self._population.mate(to_mate)
 
-        # update the population
-        # self._population.delete(np.arange(len(self._population.individuals)))
-        # self._population.add(new_population)
+        # TODO: mutation?
+        mutated_individuals = self._ea_params.mutation_op.do(new_individuals)
+
+        # TODO: elitism?
 
         return new_individuals
 
@@ -272,6 +283,8 @@ class LEMOO:
                 if not self._lem_params.use_ea:
                     break
                 new_ea_individuals = self.darwinian_mode()
+                # TODO: we now just replace the old population, which is not what we should do.
+                # In darwinian_mode, we are missing an elitism operator.
                 self.update_population(new_ea_individuals)
                 self._population_history.append(copy.copy(self._population))
 
