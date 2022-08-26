@@ -151,20 +151,28 @@ class LEMOO:
             None,
         )
 
-    def darwinian_mode(self) -> np.ndarray:
-        # Evaluation: compute the fitnesses of the current population
+    def darwinian_mode(self) -> Population:
+        """Do evolution."""
+        # mate
+        offspring = self._population.mate()
+        self._population.add(offspring, False)
+
+        fitness = self._lem_params.fitness_indicator(self._population)
+        selected = self._ea_params.selection_op.do(self._population, fitness)
+
+        self._population.keep(selected)
+
+        """
         fitness = self._lem_params.fitness_indicator(self._population)
 
         # Selection: select individuals to mate and mate
-        to_mate = self._ea_params.selection_op.do(self._population, fitness)
-        new_individuals = self._population.mate(to_mate)
+        keep_alive = self._ea_params.selection_op.do(self._population, fitness)
+        offsprings = self._population.mate()
 
-        # TODO: mutation?
-        mutated_individuals = self._ea_params.mutation_op.do(new_individuals)
-
-        # TODO: elitism?
-
-        return new_individuals
+        self._population.add(offsprings)
+        self._population.keep(keep_alive)
+        """
+        return
 
     def learning_mode(self) -> np.ndarray:
         # sort individuals in the current population according to their fitness value
@@ -282,10 +290,7 @@ class LEMOO:
             for _ in range(self._lem_params.n_ea_gen_per_iter):
                 if not self._lem_params.use_ea:
                     break
-                new_ea_individuals = self.darwinian_mode()
-                # TODO: we now just replace the old population, which is not what we should do.
-                # In darwinian_mode, we are missing an elitism operator.
-                self.update_population(new_ea_individuals)
+                self.darwinian_mode()
                 self._population_history.append(copy.copy(self._population))
 
             # Learning mode
@@ -302,8 +307,7 @@ class LEMOO:
         for _ in range(self._lem_params.n_ea_gen_per_iter):
             if not self._lem_params.use_ea:
                 break
-            new_ea_individuals = self.darwinian_mode()
-            self.update_population(new_ea_individuals)
+            self.darwinian_mode()
             self._population_history.append(copy.copy(self._population))
 
         return self._population_history

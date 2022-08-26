@@ -81,7 +81,9 @@ def test_darwin_mode(toy_model):
     # test that the darwin step returns a new population that differs from the previous one
     old_individuals = toy_model._population.individuals
 
-    new_individuals = toy_model.darwinian_mode()
+    toy_model.darwinian_mode()
+
+    new_individuals = toy_model._population.individuals
 
     npt.assert_raises(
         AssertionError, npt.assert_allclose, old_individuals, new_individuals
