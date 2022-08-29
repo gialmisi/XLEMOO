@@ -1,7 +1,7 @@
 import copy
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import List, Callable
+from typing import List, Callable, Optional, Union
 
 from desdeo_emo.population import (
     SurrogatePopulation,
@@ -99,8 +99,20 @@ class LEMParams:
     n_ml_gen_per_iter: int
     use_ml: bool
     use_ea: bool
-    fitness_indicator: Callable[[Population], np.ndarray]
+    fitness_indicator: Callable[[np.ndarray], np.ndarray]
     past_gens_to_consider: int
+
+
+@dataclass
+class PastGeneration:
+    """A past generation with the individuals (decison space) and their
+    corresponsing objective fitness values and fitness function values.
+
+    """
+
+    individulas: np.ndarray
+    objectives_fitnesses: np.ndarray
+    fitness_fun_values: np.ndarray
 
 
 class LEMOO:
@@ -116,13 +128,21 @@ class LEMOO:
         self._ea_params: EAParams = ea_params
         self._ml_params: MLParams = ml_params
         self.current_ml_model: MLModel = ml_params.ml_model
+        self._population: Union[None, SurrogatePopulation] = None
 
         # initialize the population and the evolutionary operators
+        self._generation_history: List[PastGeneration] = []
+        self.initialize_population()
+        self.add_population_to_history()
+
+    def initialize_population(self) -> None:
+        """Use the defined initialization design to init a new population"""
         initial_population = create_new_individuals(
             self._ea_params.population_init_design,
             self._problem,
             pop_size=self._ea_params.population_size,
         )
+
         self._population = SurrogatePopulation(
             self._problem,
             self._ea_params.population_size,
@@ -132,10 +152,10 @@ class LEMOO:
             None,
         )
 
-        self._population_history = []
+        return
 
     def reset_population(self):
-        self._population_history = []
+        """Reset the current population."""
         initial_population = create_new_individuals(
             self._ea_params.population_init_design,
             self._problem,
@@ -151,36 +171,53 @@ class LEMOO:
             None,
         )
 
-    def darwinian_mode(self) -> Population:
-        """Do evolution."""
+    def reset_generation_history(self):
+        """Reset the population history."""
+        self._generation_history = []
+
+    def add_population_to_history(
+        self,
+        individuals: Optional[np.ndarray] = None,
+        objective_fitnesses: Optional[np.ndarray] = None,
+    ) -> None:
+        if individuals or objective_fitnesses:
+            # add current population to history
+            return
+        else:
+            # add supplied individuals and fitnesses to history
+            fitness_fun_values = self._lem_params.fitness_indicator(
+                self._population.fitness
+            )
+            past_gen = PastGeneration(
+                self._population.individuals,
+                self._population.fitness,
+                fitness_fun_values,
+            )
+            self._generation_history.append(past_gen)
+            return
+
+    def darwinian_mode(self) -> None:
+        """Do evolution. The size of the population can vary."""
         # mate
         offspring = self._population.mate()
         self._population.add(offspring, False)
 
-        fitness = self._lem_params.fitness_indicator(self._population)
-        selected = self._ea_params.selection_op.do(self._population, fitness)
+        fitness_fun_values = self._lem_params.fitness_indicator(
+            self._population.fitness
+        )
+        selected = self._ea_params.selection_op.do(self._population, fitness_fun_values)
 
         self._population.keep(selected)
 
-        """
-        fitness = self._lem_params.fitness_indicator(self._population)
-
-        # Selection: select individuals to mate and mate
-        keep_alive = self._ea_params.selection_op.do(self._population, fitness)
-        offsprings = self._population.mate()
-
-        self._population.add(offsprings)
-        self._population.keep(keep_alive)
-        """
         return
 
     def learning_mode(self) -> np.ndarray:
         # sort individuals in the current population according to their fitness value
-        if self._lem_params.past_gens_to_consider > len(self._population_history):
+        if self._lem_params.past_gens_to_consider > len(self._generation_history):
             print(
-                f"The number of past generations to consider ({self._lem_params.past_gens_to_consider}) is greater than the number of past generations ({len(self._population_history)}. Using {len(self._population_history)} past populations instead."
+                f"The number of past generations to consider ({self._lem_params.past_gens_to_consider}) is greater than the number of past generations ({len(self._generation_history)}. Using {len(self._generation_history)} past populations instead."
             )
-            n_to_consider = len(self._population_history)
+            n_to_consider = len(self._generation_history)
         else:
             n_to_consider = self._lem_params.past_gens_to_consider
 
@@ -188,7 +225,7 @@ class LEMOO:
             np.array(
                 [
                     self._ml_params.ml_fitness(p)
-                    for p in self._population_history[-n_to_consider:]
+                    for p in self._generation_history[-n_to_consider:]
                 ]
             )
             .squeeze()
@@ -204,7 +241,7 @@ class LEMOO:
         l_group_ids = sorted_ids[-l_split_id:]
 
         individuals = np.vstack(
-            [p.individuals for p in self._population_history[-n_to_consider:]]
+            [p.individuals for p in self._generation_history[-n_to_consider:]]
         )
 
         h_sample = individuals[h_group_ids]
@@ -253,6 +290,7 @@ class LEMOO:
         self._population.add(new_individuals)
         return
 
+    """
     def cherry_pick(self, ml_individuals: np.ndarray) -> np.ndarray:
         ea_individuals = self._population.individuals
 
@@ -280,37 +318,13 @@ class LEMOO:
         )
 
         return cherries
+    """
 
     def run(self) -> List[Population]:
         # save initial population
-        self._population_history.append(copy.copy(self._population))
+        self._generation_history.append(copy.copy(self._population))
 
-        for _ in range(self._lem_params.n_total_iterations):
-            # Darwinian mode
-            for _ in range(self._lem_params.n_ea_gen_per_iter):
-                if not self._lem_params.use_ea:
-                    break
-                self.darwinian_mode()
-                self._population_history.append(copy.copy(self._population))
-
-            # Learning mode
-            for _ in range(self._lem_params.n_ml_gen_per_iter):
-                if not self._lem_params.use_ml:
-                    break
-                print("starting learning mode")
-                new_ml_individuals = self.learning_mode()
-                cherries = self.cherry_pick(new_ml_individuals)
-                self.update_population(cherries)
-                self._population_history.append(copy.copy(self._population))
-
-        # Finish with Darwinian mode``
-        for _ in range(self._lem_params.n_ea_gen_per_iter):
-            if not self._lem_params.use_ea:
-                break
-            self.darwinian_mode()
-            self._population_history.append(copy.copy(self._population))
-
-        return self._population_history
+        return self._generation_history
 
 
 if __name__ == "__main__":

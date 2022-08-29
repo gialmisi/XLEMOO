@@ -85,17 +85,21 @@ def test_darwin_mode(toy_model):
 
     new_individuals = toy_model._population.individuals
 
+    # Raises AssertionError if: old and new individuals differ in size, or when
+    # they are of the same size, but have different individual values.
+    # If nothing is raised (the test fails), it means that the two
+    # poulations have exactly the same size and individuals, thus, the
+    # test fails as expected.
     npt.assert_raises(
         AssertionError, npt.assert_allclose, old_individuals, new_individuals
     )
 
     assert len(new_individuals.shape) == 2
-    assert new_individuals.shape[0] == toy_model._ea_params.population_size
 
 
 def test_learning_mode(toy_model):
     # test that the learning step return a new population that differs from the previous one
-    toy_model._population_history = [toy_model._population]
+    toy_model._generation_history = [toy_model._population]
     old_individuals = toy_model._population.individuals
 
     new_individuals = toy_model.learning_mode()
@@ -128,37 +132,57 @@ def test_run(toy_model):
     assert should_be == len(history)
 
 
-def test_reset_population(toy_model):
-    # history should be empty
-    assert len(toy_model._population_history) == 0
+def test_add_populatin_to_history(toy_model):
+    # check that the initial population was added to history
+    assert len(toy_model._generation_history) == 1
 
-    history = toy_model.run()
+    # do evolution once and update the history
+    toy_model.darwinian_mode()
+    toy_model.add_population_to_history()
 
-    # history non-empty
-    assert len(history) > 0
-    old_individuals = toy_model._population.individuals
+    # check history
+    assert len(toy_model._generation_history) == 2
 
-    # reset population and history
-    toy_model.reset_population()
-
-    # history should be empty
-    assert len(toy_model._population_history) == 0
-
-    # population should be changed
+    ## check that the added generation differs from the previous one
+    # individuals
     npt.assert_raises(
         AssertionError,
         npt.assert_allclose,
-        old_individuals,
-        toy_model._population.individuals,
+        toy_model._generation_history[0].individulas,
+        toy_model._generation_history[1].individulas,
+    )
+    # objective fitness
+    npt.assert_raises(
+        AssertionError,
+        npt.assert_allclose,
+        toy_model._generation_history[0].objectives_fitnesses,
+        toy_model._generation_history[1].objectives_fitnesses,
+    )
+
+    # fitness fun values
+    npt.assert_raises(
+        AssertionError,
+        npt.assert_allclose,
+        toy_model._generation_history[0].fitness_fun_values,
+        toy_model._generation_history[1].fitness_fun_values,
     )
 
 
-def test_cherry_pick(toy_model):
-    # run the model just to have a population
-    toy_model.run()
+def test_reset_population_history(toy_model):
+    # check that the initial population was added to history
+    assert len(toy_model._generation_history) == 1
 
-    ml_individuals = toy_model._population_history[0].individuals
+    # do evolution a few times and update the history
+    n = 4
+    for i in range(4):
+        toy_model.darwinian_mode()
+        toy_model.add_population_to_history()
 
-    res = toy_model.cherry_pick(ml_individuals)
+    # check history is populated
+    assert len(toy_model._generation_history) == 5
 
-    assert res.shape[0] == toy_model._ea_params.population_size
+    # reset history
+    toy_model.reset_generation_history()
+
+    # check history is empty
+    assert len(toy_model._generation_history) == 0

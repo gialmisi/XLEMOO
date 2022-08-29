@@ -3,9 +3,8 @@ from desdeo_tools.scalarization.ASF import ASFBase
 import numpy as np
 
 
-def naive_sum(population: Population) -> np.ndarray:
-    objective_values = population.problem.evaluate(population.individuals).objectives
-    return np.atleast_2d(np.sum(objective_values, axis=1)).T
+def naive_sum(objectives_fitnesses: np.ndarray) -> np.ndarray:
+    return np.atleast_2d(np.sum(objectives_fitnesses, axis=1)).T
 
 
 def dist_to_ideal(population: Population, ideal: np.ndarray) -> np.ndarray:
