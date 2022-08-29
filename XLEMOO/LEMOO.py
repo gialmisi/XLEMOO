@@ -1,7 +1,7 @@
 import copy
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
-from typing import List, Callable, Optional, Union
+from typing import List, Callable, Optional, Union, Dict
 
 from desdeo_emo.population import (
     SurrogatePopulation,
@@ -137,10 +137,30 @@ class LEMOO:
         # initialize the population and the evolutionary operators
         self._generation_history: List[PastGeneration] = []
         self.initialize_population()
-        self.add_population_to_history()
 
     def initialize_population(self) -> None:
-        """Use the defined initialization design to init a new population"""
+        """Use the defined initialization design to init a new population, add the initial population to the history of populations."""
+        initial_population = create_new_individuals(
+            self._ea_params.population_init_design,
+            self._problem,
+            pop_size=self._ea_params.population_size,
+        )
+
+        self._population = SurrogatePopulation(
+            self._problem,
+            self._ea_params.population_size,
+            initial_population,
+            self._ea_params.cross_over_op,
+            self._ea_params.mutation_op,
+            None,
+        )
+
+        self.add_population_to_history()
+
+        return
+
+    def reset_population(self) -> None:
+        """Reset the current population. Do not add the new population to history."""
         initial_population = create_new_individuals(
             self._ea_params.population_init_design,
             self._problem,
@@ -157,23 +177,6 @@ class LEMOO:
         )
 
         return
-
-    def reset_population(self):
-        """Reset the current population."""
-        initial_population = create_new_individuals(
-            self._ea_params.population_init_design,
-            self._problem,
-            pop_size=self._ea_params.population_size,
-        )
-
-        self._population = SurrogatePopulation(
-            self._problem,
-            self._ea_params.population_size,
-            initial_population,
-            self._ea_params.cross_over_op,
-            self._ea_params.mutation_op,
-            None,
-        )
 
     def reset_generation_history(self):
         """Reset the population history."""
@@ -386,7 +389,7 @@ class LEMOO:
         if (
             (past_fitness_fun_values[best_idx] / self._best_fitness_fun_value)
         ) < self._lem_params.darwin_threshold:
-            self._best_fitness_fun_value = past_fitness_fun_values[best_idx]
+            self._best_fitness_fun_value = past_fitness_fun_values[best_idx][0]
 
             return True
 
@@ -394,17 +397,28 @@ class LEMOO:
 
             return False
 
-    def run(self) -> None:
+    def run(self) -> Dict:
+        # counters:
+        counters = {"darwin_mode": 0}
+
         # start in ML mode
-        if self._lem_params.use_ml:
-            # TODO: reimplement me!
+        if self._lem_params.use_darwin:
             pass
 
         # do Darwinian mode
         if self._lem_params.use_darwin:
-            pass
+            while True:
+                # we assume the population has been saved in a previous iteration
+                for _ in range(self._lem_params.darwin_probe):
+                    self.darwinian_mode()
+                    self.add_population_to_history()
+                    counters["darwin_mode"] += 1
 
-        return
+                # iterate until condition is True
+                if self.check_darwin_condition_best():
+                    break
+
+        return counters
 
 
 if __name__ == "__main__":

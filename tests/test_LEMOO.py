@@ -322,3 +322,15 @@ def test_check_darwing_condiiton_best(toy_model):
 
     # check correct best fitness
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 2.0)
+
+def test_run_darwin_only(toy_model):
+    toy_model._lem_params.use_ml = False
+    initial_best = 1.1
+
+    toy_model._lem_params.darwin_probe = 5
+    toy_model._lem_params.darwin_threshold = 0.95
+    toy_model._best_fitness_fun_value = initial_best
+
+    counters = toy_model.run()
+
+    print(counters)
