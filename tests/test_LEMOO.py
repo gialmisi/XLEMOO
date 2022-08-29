@@ -265,3 +265,60 @@ def test_collect_population(toy_model):
     assert individuals_1.shape[1] == 3
     assert objectives_fitnessess_1.shape[1] == 2
     assert fitness_fun_values_1.shape[1] == 1
+
+
+def test_check_darwing_condiiton_best(toy_model):
+    toy_model.reset_generation_history()
+    assert len(toy_model._generation_history) == 0
+
+    toy_model._lem_params.darwin_probe = 2
+    toy_model._lem_params.darwin_threshold = (
+        0.95  # expect new best fitness to be less than 0.95*old_best_fitness
+    )
+
+    # add toy data to generations, only fitness value matters
+    # fitness is the sum of the objectives
+    n_times = 5
+
+    for i in range(n_times):
+        toy_model.add_population_to_history(
+            individuals=[np.zeros(3), np.zeros(3), np.zeros(3)],
+            objectives_fitnesses=[i * np.ones(2), i * np.ones(2)],
+        )
+
+    assert toy_model.check_darwin_condition_best()
+    npt.assert_almost_equal(toy_model._best_fitness_fun_value, 6.0)
+
+    # consider one more generation
+    toy_model._lem_params.darwin_probe = 3
+
+    assert toy_model.check_darwin_condition_best()
+    npt.assert_almost_equal(toy_model._best_fitness_fun_value, 4.0)
+
+    # consider all generations
+    toy_model._lem_params.darwin_probe = 99
+
+    assert toy_model.check_darwin_condition_best()
+    npt.assert_almost_equal(toy_model._best_fitness_fun_value, 0.0)
+
+    # rest best, consider two past generations, test threshold
+    toy_model._best_fitness_fun_value = 8.0  # from last generation
+    toy_model._lem_params.darwin_probe = 2
+    toy_model._lem_params.darwin_threshold = (
+        0.3  # expect new best fitness to be 0.3*old_best_fitness
+    )
+
+    # condition should not be true
+    assert not toy_model.check_darwin_condition_best()
+
+    # best fitness should not change
+    npt.assert_almost_equal(toy_model._best_fitness_fun_value, 8.0)
+
+    # increase past generations to include the second to last generation, condition should be met
+    toy_model._lem_params.darwin_probe = 4
+
+    # condition should be true
+    assert toy_model.check_darwin_condition_best()
+
+    # check correct best fitness
+    npt.assert_almost_equal(toy_model._best_fitness_fun_value, 2.0)

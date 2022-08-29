@@ -132,6 +132,7 @@ class LEMOO:
         self._ml_params: MLParams = ml_params
         self.current_ml_model: MLModel = ml_params.ml_model
         self._population: Union[None, SurrogatePopulation] = None
+        self._best_fitness_fun_value: float = np.inf  # lower is better!
 
         # initialize the population and the evolutionary operators
         self._generation_history: List[PastGeneration] = []
@@ -185,7 +186,9 @@ class LEMOO:
     ) -> None:
         if individuals is not None and objectives_fitnesses is not None:
             # add current population to history
-            fitness_fun_values = self._lem_params.fitness_indicator(individuals)
+            fitness_fun_values = self._lem_params.fitness_indicator(
+                objectives_fitnesses
+            )
             gen = PastGeneration(individuals, objectives_fitnesses, fitness_fun_values)
             self._generation_history.append(gen)
 
@@ -361,13 +364,35 @@ class LEMOO:
             np.atleast_2d(fitness_fun_values),
         )
 
-    def check_darwin_condition(self):
+    def check_darwin_condition_best(self) -> bool:
         """
         Check whether the darwin termination criterion is met.
         Current criterion, the best fitness value in the past 'darwin_probe' generations must have increased by darwin_threshold.
 
+        Return True and update current best value if condition is met, just return False otherwise.
+
         """
-        pass
+        # get past generations
+        (
+            past_individuals,
+            past_objectives_fitnesses,
+            past_fitness_fun_values,
+        ) = self.collect_n_past_generations(self._lem_params.darwin_probe)
+
+        # find index of best (lowest fitness value) individual
+        best_idx = np.argmin(past_fitness_fun_values)
+
+        # check condition
+        if (
+            (past_fitness_fun_values[best_idx] / self._best_fitness_fun_value)
+        ) < self._lem_params.darwin_threshold:
+            self._best_fitness_fun_value = past_fitness_fun_values[best_idx]
+
+            return True
+
+        else:
+
+            return False
 
     def run(self) -> None:
         # start in ML mode
