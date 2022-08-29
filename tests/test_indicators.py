@@ -24,8 +24,8 @@ def test_asf_wrapper(dummy_population):
         {"reference_point": np.zeros(dummy_population.problem.n_of_objectives)},
     )
 
-    fitness = fitness_f(dummy_population)
-    naive = naive_sum(dummy_population)
+    fitness = fitness_f(dummy_population.fitness)
+    naive = naive_sum(dummy_population.fitness)
 
     # check shape
     assert fitness.shape == naive.shape
