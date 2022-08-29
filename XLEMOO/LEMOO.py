@@ -98,9 +98,12 @@ class LEMParams:
     n_ea_gen_per_iter: int
     n_ml_gen_per_iter: int
     use_ml: bool
-    use_ea: bool
+    use_darwin: bool
     fitness_indicator: Callable[[np.ndarray], np.ndarray]
-    past_gens_to_consider: int
+    ml_probe: int
+    darwin_probe: int
+    ml_threshold: float
+    darwin_threshold: float
 
 
 @dataclass
@@ -110,7 +113,7 @@ class PastGeneration:
 
     """
 
-    individulas: np.ndarray
+    individuals: np.ndarray
     objectives_fitnesses: np.ndarray
     fitness_fun_values: np.ndarray
 
@@ -178,22 +181,28 @@ class LEMOO:
     def add_population_to_history(
         self,
         individuals: Optional[np.ndarray] = None,
-        objective_fitnesses: Optional[np.ndarray] = None,
+        objectives_fitnesses: Optional[np.ndarray] = None,
     ) -> None:
-        if individuals or objective_fitnesses:
+        if individuals is not None and objectives_fitnesses is not None:
             # add current population to history
+            fitness_fun_values = self._lem_params.fitness_indicator(individuals)
+            gen = PastGeneration(individuals, objectives_fitnesses, fitness_fun_values)
+            self._generation_history.append(gen)
+
             return
+
         else:
             # add supplied individuals and fitnesses to history
             fitness_fun_values = self._lem_params.fitness_indicator(
                 self._population.fitness
             )
-            past_gen = PastGeneration(
+            gen = PastGeneration(
                 self._population.individuals,
                 self._population.fitness,
                 fitness_fun_values,
             )
-            self._generation_history.append(past_gen)
+            self._generation_history.append(gen)
+
             return
 
     def darwinian_mode(self) -> None:
@@ -320,11 +329,57 @@ class LEMOO:
         return cherries
     """
 
-    def run(self) -> List[Population]:
-        # save initial population
-        self._generation_history.append(copy.copy(self._population))
+    def collect_n_past_generations(self, n: int):
+        """Collect the n past generations into a single numpy array for easier handling.
+        Returns the collected individuals, objective fitness values, and fitness function values.
 
-        return self._generation_history
+        Args:
+            n (int): number of past generations to collect.
+
+        Returns:
+            Tuple[nd.array, np.ndarray, np.ndarray]: A tuple with the collected individuals, objective fitness values, and
+            fitness function values. Each array is 2-dimensional.
+        """
+
+        if n > len(self._generation_history):
+            # n bigger than available history, truncate to length of history
+            n = len(self._generation_history)
+
+        past_slice = self._generation_history[-n:]
+
+        individuals = np.concatenate([gen.individuals for gen in past_slice])
+        objectives_fitnesses = np.concatenate(
+            [gen.objectives_fitnesses for gen in past_slice]
+        )
+        fitness_fun_values = np.concatenate(
+            [gen.fitness_fun_values for gen in past_slice]
+        )
+
+        return (
+            np.atleast_2d(individuals),
+            np.atleast_2d(objectives_fitnesses),
+            np.atleast_2d(fitness_fun_values),
+        )
+
+    def check_darwin_condition(self):
+        """
+        Check whether the darwin termination criterion is met.
+        Current criterion, the best fitness value in the past 'darwin_probe' generations must have increased by darwin_threshold.
+
+        """
+        pass
+
+    def run(self) -> None:
+        # start in ML mode
+        if self._lem_params.use_ml:
+            # TODO: reimplement me!
+            pass
+
+        # do Darwinian mode
+        if self._lem_params.use_darwin:
+            pass
+
+        return
 
 
 if __name__ == "__main__":
