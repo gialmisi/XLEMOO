@@ -100,15 +100,6 @@ def test_darwin_mode(toy_model):
     assert len(new_individuals.shape) == 2
 
 
-def test_learning_mode(toy_model):
-    # test that the learning step return a new population that differs from the previous one
-    assert False
-
-
-def test_run(toy_model):
-    assert False
-
-
 @pytest.mark.lemoo
 def test_add_populatin_to_history(toy_model):
     # check that the initial population was added to history
@@ -267,14 +258,12 @@ def test_collect_population(toy_model):
     assert fitness_fun_values_1.shape[1] == 1
 
 
-def test_check_darwin_condition_best(toy_model):
+def test_check_condition_best(toy_model):
     toy_model.reset_generation_history()
     assert len(toy_model._generation_history) == 0
 
-    toy_model._lem_params.darwin_probe = 2
-    toy_model._lem_params.darwin_threshold = (
-        0.95  # expect new best fitness to be less than 0.95*old_best_fitness
-    )
+    probe = 2
+    threshold = 0.95  # expect new best fitness to be less than 0.95*old_best_fitness
     # for testing, otherwise the best is updated upon initialization
     toy_model._best_fitness_fun_value = np.inf
 
@@ -288,39 +277,37 @@ def test_check_darwin_condition_best(toy_model):
             objectives_fitnesses=[i * np.ones(2), i * np.ones(2)],
         )
 
-    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
+    assert toy_model.check_condition_best(probe, threshold)
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 6.0)
 
     # consider one more generation
-    toy_model._lem_params.darwin_probe = 3
+    probe = 3
 
-    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
+    assert toy_model.check_condition_best(probe, threshold)
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 4.0)
 
     # consider all generations
-    toy_model._lem_params.darwin_probe = 99
+    probe = 99
 
-    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
+    assert toy_model.check_condition_best(probe, threshold)
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 0.0)
 
     # rest best, consider two past generations, test threshold
     toy_model._best_fitness_fun_value = 8.0  # from last generation
-    toy_model._lem_params.darwin_probe = 2
-    toy_model._lem_params.darwin_threshold = (
-        0.3  # expect new best fitness to be 0.3*old_best_fitness
-    )
+    probe = 2
+    threshold = 0.3  # expect new best fitness to be 0.3*old_best_fitness
 
     # condition should not be true
-    assert not toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
+    assert not toy_model.check_condition_best(probe, threshold)
 
     # best fitness should not change
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 8.0)
 
     # increase past generations to include the second to last generation, condition should be met
-    toy_model._lem_params.darwin_probe = 4
+    probe = 4
 
     # condition should be true
-    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
+    assert toy_model.check_condition_best(probe, threshold)
 
     # check correct best fitness
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 2.0)
@@ -437,3 +424,7 @@ def test_learning_mode(toy_model):
     # population should have changed
     difference = old_individuals - new_individuals
     npt.assert_raises(AssertionError, npt.assert_allclose, difference, 0.0)
+
+
+def test_check_learning_condition_best(toy_model):
+    pass

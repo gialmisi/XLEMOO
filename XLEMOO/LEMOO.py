@@ -366,83 +366,7 @@ class LEMOO:
 
         return
 
-    """
-    def learning_mode_old(self) -> np.ndarray:
-        # sort individuals in the current population according to their fitness value
-        if self._lem_params.past_gens_to_consider > len(self._generation_history):
-            print(
-                f"The number of past generations to consider ({self._lem_params.past_gens_to_consider}) is greater than the number of past generations ({len(self._generation_history)}. Using {len(self._generation_history)} past populations instead."
-            )
-            n_to_consider = len(self._generation_history)
-        else:
-            n_to_consider = self._lem_params.past_gens_to_consider
-
-        fitness = (
-            np.array(
-                [
-                    self._ml_params.ml_fitness(p)
-                    for p in self._generation_history[-n_to_consider:]
-                ]
-            )
-            .squeeze()
-            .reshape(-1)
-        )
-        sorted_ids = np.squeeze(np.argsort(fitness, axis=0))
-
-        # formulate the H and L groups
-        h_split_id = int(self._ml_params.H_split * len(sorted_ids))
-        l_split_id = int(self._ml_params.L_split * len(sorted_ids))
-
-        h_group_ids = sorted_ids[0:h_split_id]
-        l_group_ids = sorted_ids[-l_split_id:]
-
-        individuals = np.vstack(
-            [p.individuals for p in self._generation_history[-n_to_consider:]]
-        )
-
-        h_sample = individuals[h_group_ids]
-        l_sample = individuals[l_group_ids]
-
-        Y = np.hstack(
-            (np.ones(len(h_sample), dtype=int), -np.ones(len(l_sample), dtype=int))
-        )
-        X = np.vstack((h_sample, l_sample))
-
-        # create and train a classifier on the H and L samples
-        classifier = self._ml_params.ml_model.fit(X, Y)
-        self.current_ml_model = classifier
-
-        # based on the trained model, generate new individuals and combine them with the existing H sample
-        # n_individuals_needed = len(sorted_ids) - len(h_group_ids)
-        n_individuals_needed = self._ea_params.population_size
-
-        paths = find_all_paths(classifier)
-
-        # do this until enough fit individuals are found
-        instantiated = instantiate_tree_rules(
-            paths,
-            self._problem.n_of_variables,
-            self._problem.get_variable_bounds(),
-            n_individuals_needed,
-            1,
-        )
-
-        instantiated = instantiated.reshape((-1, instantiated.shape[2]))
-
-        selected_individuals = instantiated[
-            np.random.choice(
-                instantiated.shape[0], n_individuals_needed, replace=False
-            ),
-            :,
-        ]
-
-        # final_individuals = np.vstack((h_sample, selected_individuals))
-        final_individuals = selected_individuals
-
-        return final_individuals
-    """
-
-    def check_darwin_condition_best(self, n_lookback: int) -> bool:
+    def check_condition_best(self, n_lookback: int, threshold: float) -> bool:
         """
         Check whether the darwin termination criterion is met. In the past n_lookback iterations.
 
@@ -462,7 +386,7 @@ class LEMOO:
         # check condition
         if (
             (past_fitness_fun_values[best_idx] / self._best_fitness_fun_value)
-        ) < self._lem_params.darwin_threshold:
+        ) < threshold:
             self._best_fitness_fun_value = past_fitness_fun_values[best_idx][0]
 
             return True
@@ -492,7 +416,9 @@ class LEMOO:
                 # iterate until condition is True
                 # check the generations saved so far in Darwin mode, that is
                 # why we keep the darwin_iters counter.
-                if self.check_darwin_condition_best(darwin_iters):
+                if self.check_condition_best(
+                    darwin_iters, self._lem_params.darwin_threshold
+                ):
                     print("Darwing condition met!")
                     break
 
