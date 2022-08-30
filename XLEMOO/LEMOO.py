@@ -232,6 +232,44 @@ class LEMOO:
 
             return
 
+    def update_population(self, new_individuals: np.ndarray) -> None:
+        self._population.delete(np.arange(len(self._population.individuals)))
+        self._population.add(new_individuals)
+
+        return
+
+    def collect_n_past_generations(self, n: int):
+        """Collect the n past generations into a single numpy array for easier handling.
+        Returns the collected individuals, objective fitness values, and fitness function values.
+
+        Args:
+            n (int): number of past generations to collect.
+
+        Returns:
+            Tuple[nd.array, np.ndarray, np.ndarray]: A tuple with the collected individuals, objective fitness values, and
+            fitness function values. Each array is 2-dimensional.
+        """
+
+        if n > len(self._generation_history):
+            # n bigger than available history, truncate to length of history
+            n = len(self._generation_history)
+
+        past_slice = self._generation_history[-n:]
+
+        individuals = np.concatenate([gen.individuals for gen in past_slice])
+        objectives_fitnesses = np.concatenate(
+            [gen.objectives_fitnesses for gen in past_slice]
+        )
+        fitness_fun_values = np.concatenate(
+            [gen.fitness_fun_values for gen in past_slice]
+        )
+
+        return (
+            np.atleast_2d(individuals),
+            np.atleast_2d(objectives_fitnesses),
+            np.atleast_2d(fitness_fun_values),
+        )
+
     def darwinian_mode(self) -> None:
         """Do evolution. The size of the population can vary."""
         # mate
@@ -247,7 +285,89 @@ class LEMOO:
 
         return
 
-    def learning_mode(self) -> np.ndarray:
+    def learning_mode(self, instantiation_factor: float = 2.0) -> None:
+        # collect all past generations and sort them in ascending order accoring to the fitness function values.
+        (
+            all_individuals,
+            all_objectives_fitnesses,
+            all_fitness_fun_values,
+        ) = self.collect_n_past_generations(len(self._generation_history))
+
+        sorted_indices = np.argsort(np.squeeze(all_fitness_fun_values))
+
+        # formulate the H and L groups
+        # calculate the cut-off indices for both groups, the split might not be exactly
+        # accurate due to the cast to int
+        h_split_id = int(self._ml_params.H_split * len(sorted_indices))
+        l_split_id = int(self._ml_params.L_split * len(sorted_indices))
+
+        # because the indices are now sorted, we can just pick the top best and bottom worst
+        # and set them as the H and L groups
+        h_indices = sorted_indices[0:h_split_id]
+        l_indices = sorted_indices[-l_split_id:][
+            ::-1
+        ]  # reversing might not really be needed here
+
+        # pick the individuals according to the calculated indices
+        h_group = all_individuals[h_indices]
+        l_group = all_individuals[l_indices]
+
+        # create training data to train an ML model:
+        # y_train: 1 equals good, -1 equals bad!
+        x_train = np.vstack((h_group, l_group))
+        y_train = np.hstack(
+            (np.ones(len(h_group), dtype=int), -1 * np.ones(len(l_group), dtype=int))
+        )
+
+        classifier = self._ml_params.ml_model.fit(x_train, y_train)
+        self.current_ml_model = classifier
+
+        # after training the model, it must be used to instantiate new individuals according to
+        # the H-group description. I.e., find new individuals that have a classification of 1.
+        # by default, instantiate twice as many new individuals as peresent in the whole history.
+        # this factor is controlled by the instantiation_factor argument (default 2)
+
+        # if tree used, TODO: for other models, some other instantiation routine must be performed
+        paths = find_all_paths(classifier)
+        n_to_instantiate = int(
+            all_individuals.shape[0] * instantiation_factor
+        )  # must be int to work
+        instantiated = instantiate_tree_rules(
+            paths,
+            self._problem.n_of_variables,
+            self._problem.get_variable_bounds(),
+            n_to_instantiate,
+            1,
+        )
+
+        # reshape to have just a list of new individuals
+        instantiated = instantiated.reshape((-1, instantiated.shape[2]))
+
+        # mix with the existing H-group
+        instantiated_and_h = np.vstack((h_group, instantiated))
+
+        # compute objectives fitnesses
+        objective_fitnesses_new = self._problem.evaluate(instantiated_and_h).fitness
+
+        # compute fitness fun values
+        fitness_fun_values_new = self._lem_params.fitness_indicator(
+            objective_fitnesses_new
+        )
+
+        # sort the individuals according to their fitness value in ascending order
+        sorted_indices_new = np.argsort(np.squeeze(fitness_fun_values_new))
+
+        # pic the best fraction that is the same size as the last population
+        selected_indices = sorted_indices_new[0 : self._population.individuals.shape[0]]
+        selected_individuals = instantiated_and_h[selected_indices]
+
+        # replace the current population with the new selected individuals
+        self.update_population(selected_individuals)
+
+        return
+
+    """
+    def learning_mode_old(self) -> np.ndarray:
         # sort individuals in the current population according to their fitness value
         if self._lem_params.past_gens_to_consider > len(self._generation_history):
             print(
@@ -320,73 +440,7 @@ class LEMOO:
         final_individuals = selected_individuals
 
         return final_individuals
-
-    def update_population(self, new_individuals: np.ndarray):
-        self._population.delete(np.arange(len(self._population.individuals)))
-        self._population.add(new_individuals)
-        return
-
     """
-    def cherry_pick(self, ml_individuals: np.ndarray) -> np.ndarray:
-        ea_individuals = self._population.individuals
-
-        individuals = np.vstack((ea_individuals, ml_individuals))
-
-        ea_fitness = self._lem_params.fitness_indicator(self._population)
-        ml_fitness = self._lem_params.fitness_indicator(
-            DummyPopulation(ml_individuals, self._problem)
-        )
-        fitness = np.vstack((ea_fitness, ml_fitness))
-
-        sorted_ids = np.argsort(fitness, axis=0)
-
-        # how many from ml population and how many from ea population were chosen
-        from_ea = (
-            sorted_ids[: self._ea_params.population_size]
-            < self._ea_params.population_size
-        ).sum()
-        from_ml = self._ea_params.population_size - from_ea
-
-        print(f"Cherry pick results: EA: {from_ea}; ML: {from_ml}.")
-
-        cherries = np.squeeze(
-            individuals[sorted_ids[: self._ea_params.population_size]]
-        )
-
-        return cherries
-    """
-
-    def collect_n_past_generations(self, n: int):
-        """Collect the n past generations into a single numpy array for easier handling.
-        Returns the collected individuals, objective fitness values, and fitness function values.
-
-        Args:
-            n (int): number of past generations to collect.
-
-        Returns:
-            Tuple[nd.array, np.ndarray, np.ndarray]: A tuple with the collected individuals, objective fitness values, and
-            fitness function values. Each array is 2-dimensional.
-        """
-
-        if n > len(self._generation_history):
-            # n bigger than available history, truncate to length of history
-            n = len(self._generation_history)
-
-        past_slice = self._generation_history[-n:]
-
-        individuals = np.concatenate([gen.individuals for gen in past_slice])
-        objectives_fitnesses = np.concatenate(
-            [gen.objectives_fitnesses for gen in past_slice]
-        )
-        fitness_fun_values = np.concatenate(
-            [gen.fitness_fun_values for gen in past_slice]
-        )
-
-        return (
-            np.atleast_2d(individuals),
-            np.atleast_2d(objectives_fitnesses),
-            np.atleast_2d(fitness_fun_values),
-        )
 
     def check_darwin_condition_best(self, n_lookback: int) -> bool:
         """

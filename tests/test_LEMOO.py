@@ -415,3 +415,25 @@ def test_update_best_fitness_no_update(toy_model):
 
     # check that best fitness has not changed
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, dummy_best)
+
+
+def test_learning_mode(toy_model):
+    # do darwin a few times to have a population
+    assert len(toy_model._generation_history) == 1
+
+    n_darwin = 3
+    for _ in range(n_darwin):
+        toy_model.darwinian_mode()
+        toy_model.add_population_to_history()
+
+    assert len(toy_model._generation_history) == 1 + n_darwin
+
+    old_individuals = toy_model._population.individuals
+
+    toy_model.learning_mode()
+
+    new_individuals = toy_model._population.individuals
+
+    # population should have changed
+    difference = old_individuals - new_individuals
+    npt.assert_raises(AssertionError, npt.assert_allclose, difference, 0.0)
