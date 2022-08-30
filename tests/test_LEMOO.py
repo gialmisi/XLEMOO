@@ -326,10 +326,6 @@ def test_run_darwin_only(toy_model):
 
     counters = toy_model.run()
 
-    # we should be able to find solution that is better than darwin_threshold * initial_best
-    # before darwin_probe iterations
-    assert counters["darwin_mode"] < toy_model._lem_params.darwin_probe
-
     # the new best solution should be better than the given threshold times initial_best
     assert (
         toy_model._best_fitness_fun_value
@@ -470,4 +466,18 @@ def test_run_learning_mode_only(toy_model):
 
 
 def test_run(toy_model):
-    pass
+    toy_model._lem_params.ml_probe = 5
+    toy_model._lem_params.darwin_probe = 5
+    toy_model._lem_params.ml_threshold = 0.999
+    toy_model._lem_params.darwin_threshold = 0.999
+    toy_model._lem_params.use_ml = True
+    toy_model._lem_params.use_darwin = True
+
+    counters = toy_model.run()
+
+    # both modes should have run for at least their probe amounts once, but actually more
+    assert counters["learning_mode"] > toy_model._lem_params.ml_probe
+    assert counters["darwin_mode"] > toy_model._lem_params.darwin_probe
+
+    # the best fitness value should have changed
+    assert toy_model._best_fitness_fun_value < np.inf
