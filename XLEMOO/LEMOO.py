@@ -397,30 +397,56 @@ class LEMOO:
 
     def run(self) -> Dict:
         # counters:
-        counters = {"darwin_mode": 0}
+        counters = {"darwin_mode": 0, "learning_mode": 0}
 
-        # start in ML mode
-        if self._lem_params.use_darwin:
-            pass
+        keep_running = True
 
-        # do Darwinian mode
-        if self._lem_params.use_darwin:
-            darwin_iters = 0
-            while darwin_iters < self._lem_params.darwin_probe:
-                # we assume the population has been saved in a previous iteration
-                self.darwinian_mode()
-                self.add_population_to_history()
-                counters["darwin_mode"] += 1
-                darwin_iters += 1
+        while keep_running:
+            improved_in_learning = False
+            improved_in_darwin = False
 
-                # iterate until condition is True
-                # check the generations saved so far in Darwin mode, that is
-                # why we keep the darwin_iters counter.
-                if self.check_condition_best(
-                    darwin_iters, self._lem_params.darwin_threshold
-                ):
-                    print("Darwing condition met!")
-                    break
+            # start in ML mode
+            if self._lem_params.use_ml:
+                learning_iters = 0
+                while learning_iters < self._lem_params.ml_probe:
+                    # always assume previous population has been saved to history before
+                    self.learning_mode()
+                    self.add_population_to_history()
+                    counters["learning_mode"] += 1
+                    learning_iters += 1
+
+                    # check generations saved so far in learning more if they meet the termination criterion
+                    if self.check_condition_best(
+                        learning_iters, self._lem_params.ml_threshold
+                    ):
+                        improved_in_learning = True
+                        break
+            else:
+                improved_in_learning = False
+
+            # do Darwinian mode
+            if self._lem_params.use_darwin:
+                darwin_iters = 0
+                while darwin_iters < self._lem_params.darwin_probe:
+                    # we assume the population has been saved in a previous iteration
+                    self.darwinian_mode()
+                    self.add_population_to_history()
+                    counters["darwin_mode"] += 1
+                    darwin_iters += 1
+
+                    # iterate until condition is True
+                    # check the generations saved so far in Darwin mode, that is
+                    # why we keep the darwin_iters counter.
+                    if self.check_condition_best(
+                        darwin_iters, self._lem_params.darwin_threshold
+                    ):
+                        improved_in_darwin = True
+                        break
+            else:
+                improved_in_darwin = False
+
+            if not improved_in_learning and not improved_in_darwin:
+                keep_running = False
 
         return counters
 

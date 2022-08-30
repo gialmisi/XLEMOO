@@ -426,5 +426,48 @@ def test_learning_mode(toy_model):
     npt.assert_raises(AssertionError, npt.assert_allclose, difference, 0.0)
 
 
-def test_check_learning_condition_best(toy_model):
+def test_run_learning_mode_only(toy_model):
+    # do not use ML mode at all!
+    toy_model._lem_params.use_darwin = False
+
+    # test early termination
+    initial_best = 1.05
+
+    toy_model._lem_params.ml_probe = 10
+    toy_model._lem_params.ml_threshold = 0.96
+    toy_model._best_fitness_fun_value = initial_best
+
+    counters = toy_model.run()
+
+    # the new best solution should be better than the given threshold times initial_best
+    assert (
+        toy_model._best_fitness_fun_value
+        < toy_model._lem_params.ml_threshold * initial_best
+    )
+
+    # reset history
+    toy_model.reset_generation_history()
+    toy_model.initialize_population()
+
+    assert len(toy_model._generation_history) == 1
+
+    # test forced termination when ml_probe is reached
+
+    toy_model._lem_params.ml_probe = 10
+    toy_model._lem_params.ml_threshold = 0.001  # impossible!
+    toy_model._best_fitness_fun_value = initial_best
+
+    counters_forced = toy_model.run()
+
+    # should have iterated ml_probe times
+    assert counters_forced["learning_mode"] == toy_model._lem_params.ml_probe
+
+    # the current best solution should be worse than given threshold time initial_best
+    assert (
+        toy_model._best_fitness_fun_value
+        >= toy_model._lem_params.ml_threshold * initial_best
+    )
+
+
+def test_run(toy_model):
     pass
