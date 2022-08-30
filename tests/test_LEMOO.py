@@ -384,8 +384,8 @@ def test_update_best_fitness(toy_model):
     dummy_best = 9999
     toy_model._best_fitness_fun_value = dummy_best
 
-    # find best
-    toy_model.update_best_fitness()
+    # find best, should return True
+    assert toy_model.update_best_fitness()
 
     # check the new best
     # should be less than initial best
@@ -396,3 +396,22 @@ def test_update_best_fitness(toy_model):
     actual_best = toy_model._lem_params.fitness_indicator(actual_objectives)
 
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, actual_best)
+
+
+def test_update_best_fitness_no_update(toy_model):
+    # the best fitness should be updated only if a better fitness is found in the current population.
+    new_individuals = np.array(
+        [[0.3, 0.3, 0.3], [0.2, 0.2, 0.2], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7]]
+    )
+    toy_model.update_population(new_individuals)
+
+    assert len(toy_model._population.individuals) == 4
+
+    dummy_best = 0.001
+    toy_model._best_fitness_fun_value = dummy_best
+
+    # find best, should not be able to, return False
+    assert not toy_model.update_best_fitness()
+
+    # check that best fitness has not changed
+    npt.assert_almost_equal(toy_model._best_fitness_fun_value, dummy_best)

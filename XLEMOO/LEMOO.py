@@ -183,17 +183,25 @@ class LEMOO:
         """Reset the population history."""
         self._generation_history = []
 
-    def update_best_fitness(self) -> None:
+    def update_best_fitness(self) -> bool:
         """Find the best fitness value in the current population and update the value stored in
-        self._best_fitness_fun_value.
+        self._best_fitness_fun_value if the found fitness is better.
+
+        Returns:
+            bool: True if the best fitness was updated, otherwise False.
         """
         fitness_fun_values = self._lem_params.fitness_indicator(
             self._population.fitness
         )
         min_value = np.min(fitness_fun_values)
-        self._best_fitness_fun_value = min_value
 
-        return
+        if min_value < self._best_fitness_fun_value:
+            self._best_fitness_fun_value = min_value
+
+            return True
+
+        else:
+            return False
 
     def add_population_to_history(
         self,
