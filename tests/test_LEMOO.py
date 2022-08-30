@@ -267,7 +267,7 @@ def test_collect_population(toy_model):
     assert fitness_fun_values_1.shape[1] == 1
 
 
-def test_check_darwing_condiiton_best(toy_model):
+def test_check_darwin_condition_best(toy_model):
     toy_model.reset_generation_history()
     assert len(toy_model._generation_history) == 0
 
@@ -275,6 +275,8 @@ def test_check_darwing_condiiton_best(toy_model):
     toy_model._lem_params.darwin_threshold = (
         0.95  # expect new best fitness to be less than 0.95*old_best_fitness
     )
+    # for testing, otherwise the best is updated upon initialization
+    toy_model._best_fitness_fun_value = np.inf
 
     # add toy data to generations, only fitness value matters
     # fitness is the sum of the objectives
@@ -369,3 +371,28 @@ def test_run_darwin_only(toy_model):
         toy_model._best_fitness_fun_value
         >= toy_model._lem_params.darwin_threshold * initial_best
     )
+
+
+def test_update_best_fitness(toy_model):
+    new_individuals = np.array(
+        [[0.3, 0.3, 0.3], [0.2, 0.2, 0.2], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7]]
+    )
+    toy_model.update_population(new_individuals)
+
+    assert len(toy_model._population.individuals) == 4
+
+    dummy_best = 9999
+    toy_model._best_fitness_fun_value = dummy_best
+
+    # find best
+    toy_model.update_best_fitness()
+
+    # check the new best
+    # should be less than initial best
+    assert toy_model._best_fitness_fun_value < dummy_best
+
+    # should be the fitness value of evaluationg the third objective vector in new_individuals
+    actual_objectives = toy_model._problem.evaluate(new_individuals[2]).objectives
+    actual_best = toy_model._lem_params.fitness_indicator(actual_objectives)
+
+    npt.assert_almost_equal(toy_model._best_fitness_fun_value, actual_best)
