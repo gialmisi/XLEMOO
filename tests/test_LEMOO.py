@@ -286,19 +286,19 @@ def test_check_darwing_condiiton_best(toy_model):
             objectives_fitnesses=[i * np.ones(2), i * np.ones(2)],
         )
 
-    assert toy_model.check_darwin_condition_best()
+    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 6.0)
 
     # consider one more generation
     toy_model._lem_params.darwin_probe = 3
 
-    assert toy_model.check_darwin_condition_best()
+    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 4.0)
 
     # consider all generations
     toy_model._lem_params.darwin_probe = 99
 
-    assert toy_model.check_darwin_condition_best()
+    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 0.0)
 
     # rest best, consider two past generations, test threshold
@@ -309,7 +309,7 @@ def test_check_darwing_condiiton_best(toy_model):
     )
 
     # condition should not be true
-    assert not toy_model.check_darwin_condition_best()
+    assert not toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
 
     # best fitness should not change
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 8.0)
@@ -318,19 +318,54 @@ def test_check_darwing_condiiton_best(toy_model):
     toy_model._lem_params.darwin_probe = 4
 
     # condition should be true
-    assert toy_model.check_darwin_condition_best()
+    assert toy_model.check_darwin_condition_best(toy_model._lem_params.darwin_probe)
 
     # check correct best fitness
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 2.0)
 
-def test_run_darwin_only(toy_model):
-    toy_model._lem_params.use_ml = False
-    initial_best = 1.1
 
-    toy_model._lem_params.darwin_probe = 5
-    toy_model._lem_params.darwin_threshold = 0.95
+def test_run_darwin_only(toy_model):
+    # do not use ML mode at all!
+    toy_model._lem_params.use_ml = False
+
+    # test early termination
+    initial_best = 1.07
+
+    toy_model._lem_params.darwin_probe = 10
+    toy_model._lem_params.darwin_threshold = 0.97
     toy_model._best_fitness_fun_value = initial_best
 
     counters = toy_model.run()
 
-    print(counters)
+    # we should be able to find solution that is better than darwin_threshold * initial_best
+    # before darwin_probe iterations
+    assert counters["darwin_mode"] < toy_model._lem_params.darwin_probe
+
+    # the new best solution should be better than the given threshold times initial_best
+    assert (
+        toy_model._best_fitness_fun_value
+        < toy_model._lem_params.darwin_threshold * initial_best
+    )
+
+    # reset history
+    toy_model.reset_generation_history()
+    toy_model.initialize_population()
+
+    assert len(toy_model._generation_history) == 1
+
+    # test forced termination when darwin_probe is reached
+
+    toy_model._lem_params.darwin_probe = 10
+    toy_model._lem_params.darwin_threshold = 0.001  # impossible!
+    toy_model._best_fitness_fun_value = initial_best
+
+    counters_forced = toy_model.run()
+
+    # should have iterated darwin_probe times
+    assert counters_forced["darwin_mode"] == toy_model._lem_params.darwin_probe
+
+    # the current best solution should be worse than given threshold time initial_best
+    assert (
+        toy_model._best_fitness_fun_value
+        >= toy_model._lem_params.darwin_threshold * initial_best
+    )

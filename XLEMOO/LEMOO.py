@@ -178,9 +178,16 @@ class LEMOO:
 
         return
 
-    def reset_generation_history(self):
+    def reset_generation_history(self) -> None:
         """Reset the population history."""
         self._generation_history = []
+
+    # TODO: method to find best solution in current population
+    def update_best_fitness(self) -> None:
+        """Find the best fitness value in the current population and update the value stored in
+        self._best_fitness_fun_value.
+        """
+        return
 
     def add_population_to_history(
         self,
@@ -367,10 +374,9 @@ class LEMOO:
             np.atleast_2d(fitness_fun_values),
         )
 
-    def check_darwin_condition_best(self) -> bool:
+    def check_darwin_condition_best(self, n_lookback: int) -> bool:
         """
-        Check whether the darwin termination criterion is met.
-        Current criterion, the best fitness value in the past 'darwin_probe' generations must have increased by darwin_threshold.
+        Check whether the darwin termination criterion is met. In the past n_lookback iterations.
 
         Return True and update current best value if condition is met, just return False otherwise.
 
@@ -380,7 +386,7 @@ class LEMOO:
             past_individuals,
             past_objectives_fitnesses,
             past_fitness_fun_values,
-        ) = self.collect_n_past_generations(self._lem_params.darwin_probe)
+        ) = self.collect_n_past_generations(n_lookback)
 
         # find index of best (lowest fitness value) individual
         best_idx = np.argmin(past_fitness_fun_values)
@@ -407,15 +413,19 @@ class LEMOO:
 
         # do Darwinian mode
         if self._lem_params.use_darwin:
-            while True:
+            darwin_iters = 0
+            while darwin_iters < self._lem_params.darwin_probe:
                 # we assume the population has been saved in a previous iteration
-                for _ in range(self._lem_params.darwin_probe):
-                    self.darwinian_mode()
-                    self.add_population_to_history()
-                    counters["darwin_mode"] += 1
+                self.darwinian_mode()
+                self.add_population_to_history()
+                counters["darwin_mode"] += 1
+                darwin_iters += 1
 
                 # iterate until condition is True
-                if self.check_darwin_condition_best():
+                # check the generations saved so far in Darwin mode, that is
+                # why we keep the darwin_iters counter.
+                if self.check_darwin_condition_best(darwin_iters):
+                    print("Darwing condition met!")
                     break
 
         return counters
