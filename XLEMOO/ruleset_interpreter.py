@@ -80,21 +80,42 @@ def instantiate_rules(
         else:
             op_value_per_index[i] = [(op, val)]
 
-    # check and eliminate redundancies
-    for i in op_value_per_index:
-        current_max = feature_limits[i][0]
-        current_min = feature_limits[i][1]
+    new_samples = np.zeros((n_samples, n_features))
+    # go through each feature index and instantiate the rules
+    # for feature_i in op_value_per_index:
+    for feature_i in range(n_features):
+        # keep track of the lower and upper bounds for each feature, by default,
+        # the bounds should be the given feature limits
+        current_min = feature_limits[feature_i][0]
+        current_max = feature_limits[feature_i][1]
 
-        for (j, op, value) in enumerate(op_value_per_index[i]):
-            if value < feature_limits[i][0] or value > feature_limits[i][1]:
-                # value is out of bounds, drop the rule
-                del op_value_per_index[i][j]
+        if not feature_i in op_value_per_index:
+            # no rules for feature, instantaite between min and max
+            new_samples[:, feature_i] = np.random.uniform(
+                current_min, current_max, n_samples
+            )
 
-            elif op in ["<", "<="]:
-                # less than rule
-                pass
+            continue
+
+        for (rule_i, (op, value)) in enumerate(op_value_per_index[feature_i]):
+            if op in ["<", "<="]:
+                # less than
+                if value < current_max and value > current_min:
+                    current_max = value
             elif op in [">", ">="]:
-                # greater than rule
+                # greater than
+                if value > current_min and value < current_max:
+                    current_min = value
+            else:
+                # unkown operator
+                print(
+                    f"When instantiating rule {rules} got unkown operator {op}. Skipping.."
+                )
                 pass
 
-    pass
+        # instantitate features in the samples according to rules
+        new_samples[:, feature_i] = np.random.uniform(
+            current_min, current_max, n_samples
+        )
+
+    return new_samples

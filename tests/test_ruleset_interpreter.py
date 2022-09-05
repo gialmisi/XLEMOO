@@ -25,9 +25,9 @@ class DummySlipper:
 @pytest.fixture
 def dummy_slipper_classifier():
     rule_dicts = [
-        {("x_2", "<"): "0.2", ("x_1", ">="): "0.9"},
+        {("x_2", "<"): "12.0", ("x_1", ">="): "9.5", ("x_0", ">"): "2.5"},
         {("x_2", "<"): "0.2", ("x_1", ">="): "0.9", ("x_3", "<"): "0.1"},
-        {("x_1", ">"): "0.8", ("x_3", "<="): "0.3", ("x_1", "<"): "1.2"},
+        {("x_1", ">"): "7.0", ("x_3", "<="): "16.0", ("x_1", ">"): "8.0"},
     ]
     weights = [0.5, 0.3, 0.9]
 
@@ -46,11 +46,66 @@ def test_instantiate_ruleset_rules():
 def test_instaniate_rules(dummy_slipper_classifier):
     rules_list, _ = extract_slipper_rules(dummy_slipper_classifier)
 
-    first_rule = rules_list[2]
+    first_rule = rules_list[0]
 
     feature_limits = np.array([[0, 5], [5, 10], [10, 15], [15, 20]])
+    n_features = 4
+    n_samples = 1000
 
-    instantiate_rules(first_rule, 4, feature_limits, 10)
+    new_samples = instantiate_rules(first_rule, n_features, feature_limits, n_samples)
+
+    # check dimensions
+    assert new_samples.shape[0] == n_samples
+    assert new_samples.shape[1] == n_features
+
+    # check correct limits
+    ## x_0 > 0, x_0 <5
+    assert np.all(new_samples[:, 0] > 0)
+    assert np.all(new_samples[:, 0] < 5)
+    ## x_1 > 5, x_1 < 10
+    assert np.all(new_samples[:, 1] > 5)
+    assert np.all(new_samples[:, 1] < 10)
+    ## x_2 > 10, x_2 < 15
+    assert np.all(new_samples[:, 2] > 10)
+    assert np.all(new_samples[:, 2] < 15)
+    ## x_3 > 15, x_3 < 20
+    assert np.all(new_samples[:, 3] > 15)
+    assert np.all(new_samples[:, 3] < 20)
+
+    # check rules
+    ## x_0 > 2.5
+    assert np.all(new_samples[:, 0] > 2.5)
+    ## x_1 >= 9.5
+    assert np.all(new_samples[:, 1] > 9.5)
+    ## x_2 < 12.00
+    assert np.all(new_samples[:, 2] < 12.0)
+
+    # If redundant rules are given, the stricter is adheret to
+    last_rule = rules_list[2]
+
+    new_samples_last = instantiate_rules(
+        last_rule, n_features, feature_limits, n_samples
+    )
+
+    # check correct limits
+    ## x_0 > 0, x_0 <5
+    assert np.all(new_samples_last[:, 0] > 0)
+    assert np.all(new_samples_last[:, 0] < 5)
+    ## x_1 > 5, x_1 < 10
+    assert np.all(new_samples_last[:, 1] > 5)
+    assert np.all(new_samples_last[:, 1] < 10)
+    ## x_2 > 10, x_2 < 15
+    assert np.all(new_samples_last[:, 2] > 10)
+    assert np.all(new_samples_last[:, 2] < 15)
+    ## x_3 > 15, x_3 < 20
+    assert np.all(new_samples_last[:, 3] > 15)
+    assert np.all(new_samples_last[:, 3] < 20)
+
+    # check rules
+    ## x_1 > 0.8 (override > 0.7)
+    assert np.all(new_samples_last[:, 1] > 0.8)
+    ## x_3 < 16.0
+    assert np.all(new_samples_last[:, 3] < 16.0)
 
 
 @pytest.mark.rulesets
