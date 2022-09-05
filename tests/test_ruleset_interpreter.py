@@ -4,6 +4,7 @@ import pytest
 from dataclasses import dataclass
 from XLEMOO.ruleset_interpreter import (
     instantiate_ruleset_rules,
+    _instantiate_ruleset_rules,
     extract_slipper_rules,
     instantiate_rules,
     Rules,
@@ -39,8 +40,48 @@ def dummy_slipper_classifier():
 
 
 @pytest.mark.rulesets
-def test_instantiate_ruleset_rules():
-    pass
+def test_instantiate_ruleset_rules(dummy_slipper_classifier):
+    rules_list, weights = extract_slipper_rules(dummy_slipper_classifier)
+
+    feature_limits = np.array([[0, 5], [5, 10], [10, 15], [15, 20]])
+    n_features = 4
+    n_samples = 1000
+
+    new_samples = instantiate_ruleset_rules(
+        rules_list, weights, n_features, feature_limits, n_samples
+    )
+
+    assert new_samples.shape[1] == n_features
+    # might not return exactly n_samples in total, but that is fine
+    npt.assert_allclose(new_samples.shape[0], n_samples, atol=5)
+
+
+@pytest.mark.rulesets
+def test__instantiate_ruleset_rules(dummy_slipper_classifier):
+    rules_list, weights = extract_slipper_rules(dummy_slipper_classifier)
+
+    feature_limits = np.array([[0, 5], [5, 10], [10, 15], [15, 20]])
+    n_features = 4
+    n_samples = 1000
+
+    new_samples = _instantiate_ruleset_rules(
+        rules_list, weights, n_features, feature_limits, n_samples
+    )
+
+    assert len(new_samples) == 3
+
+    # check that samples were generated according to weights
+    ## first weight
+    assert new_samples[0].shape[0] > new_samples[1].shape[0]
+    assert new_samples[0].shape[0] < new_samples[2].shape[0]
+
+    ## second weight
+    assert new_samples[1].shape[0] < new_samples[0].shape[0]
+    assert new_samples[1].shape[0] < new_samples[2].shape[0]
+
+    ## third weight
+    assert new_samples[2].shape[0] > new_samples[0].shape[0]
+    assert new_samples[2].shape[0] > new_samples[1].shape[0]
 
 
 def test_instaniate_rules(dummy_slipper_classifier):

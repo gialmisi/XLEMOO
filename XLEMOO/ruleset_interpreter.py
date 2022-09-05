@@ -25,17 +25,6 @@ def extract_slipper_rules(
     return rules, weights
 
 
-def instantiate_ruleset_rules(
-    rules: List[Rules],
-    weights: List[float],
-    n_features: int,
-    feature_limits: List[Tuple[float, float]],
-    n_samples: int,
-) -> np.ndarray:
-
-    return
-
-
 def instantiate_rules(
     rules: Rules,
     n_features: int,
@@ -119,3 +108,67 @@ def instantiate_rules(
         )
 
     return new_samples
+
+
+def _instantiate_ruleset_rules(
+    rules: List[Rules],
+    weights: List[float],
+    n_features: int,
+    feature_limits: List[Tuple[float, float]],
+    n_samples: int,
+) -> List[np.ndarray]:
+    """Helper to 'instantiate_ruleset_rules'. See its description.
+
+    List[np.ndarray]: A list of samples per rule.
+    """
+    # based on the weights, figure out how many of the samples should be generated based on
+    # each rule in the rule set.
+
+    w_arr = np.array(weights)
+    fractions = w_arr / np.sum(w_arr)
+
+    n_per_rule = np.round(fractions * n_samples)
+
+    instantiated = []
+
+    for (rule_i, rule) in enumerate(rules):
+        instantiated.append(
+            instantiate_rules(rule, n_features, feature_limits, int(n_per_rule[rule_i]))
+        )
+
+    return instantiated
+
+
+def instantiate_ruleset_rules(
+    rules: List[Rules],
+    weights: List[float],
+    n_features: int,
+    feature_limits: List[Tuple[float, float]],
+    n_samples: int,
+) -> np.ndarray:
+    """Instantiate samples according to a rule set. Instantiates in total approximately n_samples
+    of new samples according to the rules and features limits. If for some feature there are no rules,
+    then only the feature limits are used. The feature limits will override rules if there is a
+    conflict. The given weights will dictate how large of a fraction of n_samples will be generated
+    for each rule. It is assumed that the rules supplied (in a list) have a weight at the same index
+    in the argument weights.
+
+    Args:
+        rules (List[Rules]): The rules contained in the rule set. See 'instantiate_rules'.
+        weights (List[float]): The weights for each rule in the rule set. It is assumed tht the weight
+            at index i corresponds to the weight of rules at index i in 'rules'.
+        n_features (int): How many new samples to generate according to the rules. This
+            is approximate, but the total of new samples should be relatively close to this number.
+        feature_limits (List[Tuple[float, float]]): Pairs representing the lower and upper bounds of
+            each feature.
+        n_samples (int): Approximately how many new samples to generate in total.
+
+    Returns:
+        np.ndarray: A 2D array with all the new generated samples. If a list of samples per rule is desired,
+            see '_instantiate_ruleset_rules'.
+    """
+    instantiated = _instantiate_ruleset_rules(
+        rules, weights, n_features, feature_limits, n_samples
+    )
+
+    return np.vstack(instantiated)
