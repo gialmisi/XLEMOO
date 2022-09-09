@@ -123,15 +123,20 @@ def _instantiate_ruleset_rules(
     """
     # based on the weights, figure out how many of the samples should be generated based on
     # each rule in the rule set.
+    # ignore rules with negative weight
 
     w_arr = np.array(weights)
-    fractions = w_arr / np.sum(w_arr)
+
+    # ignore negative weights
+    fractions = w_arr[w_arr >= 0] / np.sum(w_arr[w_arr >= 0])
 
     n_per_rule = np.round(fractions * n_samples)
 
     instantiated = []
 
-    for (rule_i, rule) in enumerate(rules):
+    rules_pos_w = np.array(rules)[w_arr >= 0]
+
+    for (rule_i, rule) in enumerate(rules_pos_w):
         instantiated.append(
             instantiate_rules(rule, n_features, feature_limits, int(n_per_rule[rule_i]))
         )

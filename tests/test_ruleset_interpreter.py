@@ -84,6 +84,28 @@ def test__instantiate_ruleset_rules(dummy_slipper_classifier):
     assert new_samples[2].shape[0] > new_samples[1].shape[0]
 
 
+@pytest.mark.rulesets
+def test__instantiate_ruleset_rules_negative_ws(dummy_slipper_classifier):
+    rules_list, _ = extract_slipper_rules(dummy_slipper_classifier)
+    weights = [0.5, -0.3, 0.9]
+
+    feature_limits = np.array([[0, 5], [5, 10], [10, 15], [15, 20]])
+    n_features = 4
+    n_samples = 1000
+
+    new_samples = _instantiate_ruleset_rules(
+        rules_list, weights, n_features, feature_limits, n_samples
+    )
+
+    # one rule should be dropped with the negative weights
+    assert len(new_samples) == 2
+
+    # check that samples were generated according to weights
+    assert new_samples[0].shape[0] < new_samples[1].shape[0]
+    assert new_samples[1].shape[0] > new_samples[0].shape[0]
+
+
+@pytest.mark.rulesets
 def test_instaniate_rules(dummy_slipper_classifier):
     rules_list, _ = extract_slipper_rules(dummy_slipper_classifier)
 

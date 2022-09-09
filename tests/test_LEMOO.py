@@ -14,19 +14,10 @@ from XLEMOO.fitness_indicators import naive_sum, single_objective
 from desdeo_emo.recombination import BP_mutation, SBX_xover
 from desdeo_emo.selection import TournamentSelection
 from sklearn.tree import DecisionTreeClassifier
+from imodels import SlipperClassifier
 
 # needs to be renamed, otherwise pytest thinks it is a test to be run
 from desdeo_problem.testproblems import test_problem_builder as problem_builder
-
-
-class SpoofML:
-    """Does absolutely nothing, do not trust!"""
-
-    def fit(self, X: np.ndarray, Y: np.ndarray):
-        return self
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        return np.ones(X.shape[0])
 
 
 @pytest.mark.lemoo
@@ -258,6 +249,7 @@ def test_collect_population(toy_model):
     assert fitness_fun_values_1.shape[1] == 1
 
 
+@pytest.mark.lemoo
 def test_check_condition_best(toy_model):
     toy_model.reset_generation_history()
     assert len(toy_model._generation_history) == 0
@@ -313,6 +305,7 @@ def test_check_condition_best(toy_model):
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, 2.0)
 
 
+@pytest.mark.lemoo
 def test_run_darwin_only(toy_model):
     # do not use ML mode at all!
     toy_model._lem_params.use_ml = False
@@ -356,6 +349,7 @@ def test_run_darwin_only(toy_model):
     )
 
 
+@pytest.mark.lemoo
 def test_update_best_fitness(toy_model):
     new_individuals = np.array(
         [[0.3, 0.3, 0.3], [0.2, 0.2, 0.2], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7]]
@@ -381,6 +375,7 @@ def test_update_best_fitness(toy_model):
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, actual_best)
 
 
+@pytest.mark.lemoo
 def test_update_best_fitness_no_update(toy_model):
     # the best fitness should be updated only if a better fitness is found in the current population.
     new_individuals = np.array(
@@ -400,6 +395,7 @@ def test_update_best_fitness_no_update(toy_model):
     npt.assert_almost_equal(toy_model._best_fitness_fun_value, dummy_best)
 
 
+@pytest.mark.lemoo
 def test_learning_mode(toy_model):
     # do darwin a few times to have a population
     assert len(toy_model._generation_history) == 1
@@ -422,7 +418,19 @@ def test_learning_mode(toy_model):
     npt.assert_raises(AssertionError, npt.assert_allclose, difference, 0.0)
 
 
-def test_run_learning_mode_only(toy_model):
+@pytest.mark.lemoo
+def test_learning_mode_bad_ml_type(toy_model):
+    # do darwin a few times to have a population
+    assert len(toy_model._generation_history) == 1
+
+    toy_model._ml_params.ml_model = ("not", "ml")
+
+    with pytest.raises(TypeError):
+        toy_model.learning_mode()
+
+
+@pytest.mark.lemoo
+def test_run_learning_mode_only_tree(toy_model):
     # do not use ML mode at all!
     toy_model._lem_params.use_darwin = False
 
@@ -465,6 +473,53 @@ def test_run_learning_mode_only(toy_model):
     )
 
 
+@pytest.mark.lemoo
+def test_run_learning_mode_only_slipper(toy_model):
+    # do not use ML mode at all!
+    toy_model._lem_params.use_darwin = False
+    toy_model._ml_params.ml_model = SlipperClassifier(n_estimators=5)
+    toy_model._ea_params.population_size = 200
+
+    # test early termination
+    initial_best = 1.05
+
+    toy_model._lem_params.ml_probe = 10
+    toy_model._lem_params.ml_threshold = 0.96
+    toy_model._best_fitness_fun_value = initial_best
+
+    counters = toy_model.run()
+
+    # the new best solution should be better than the given threshold times initial_best
+    assert (
+        toy_model._best_fitness_fun_value
+        < toy_model._lem_params.ml_threshold * initial_best
+    )
+
+    # reset history
+    toy_model.reset_generation_history()
+    toy_model.initialize_population()
+
+    assert len(toy_model._generation_history) == 1
+
+    # test forced termination when ml_probe is reached
+
+    toy_model._lem_params.ml_probe = 10
+    toy_model._lem_params.ml_threshold = 0.001  # impossible!
+    toy_model._best_fitness_fun_value = initial_best
+
+    counters_forced = toy_model.run()
+
+    # should have iterated ml_probe times
+    assert counters_forced["learning_mode"] == toy_model._lem_params.ml_probe
+
+    # the current best solution should be worse than given threshold time initial_best
+    assert (
+        toy_model._best_fitness_fun_value
+        >= toy_model._lem_params.ml_threshold * initial_best
+    )
+
+
+@pytest.mark.lemoo
 def test_run(toy_model):
     toy_model._lem_params.ml_probe = 5
     toy_model._lem_params.darwin_probe = 5

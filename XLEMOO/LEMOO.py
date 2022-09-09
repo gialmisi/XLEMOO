@@ -14,7 +14,11 @@ from desdeo_problem.problem import MOProblem
 
 import numpy as np
 
+from sklearn.tree import DecisionTreeClassifier
+from imodels import SlipperClassifier
+
 from XLEMOO.tree_interpreter import find_all_paths, instantiate_tree_rules
+from XLEMOO.ruleset_interpreter import extract_slipper_rules, instantiate_ruleset_rules
 
 
 class CrossOverOP(ABC):
@@ -67,6 +71,11 @@ class MLModel(ABC):
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         pass
+
+
+# Register supported ML models here
+MLModel.register(DecisionTreeClassifier)
+MLModel.register(SlipperClassifier)
 
 
 class DummyPopulation:
@@ -293,6 +302,11 @@ class LEMOO:
             all_fitness_fun_values,
         ) = self.collect_n_past_generations(len(self._generation_history))
 
+        if not isinstance(self._ml_params.ml_model, MLModel):
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
+
         sorted_indices = np.argsort(np.squeeze(all_fitness_fun_values))
 
         # formulate the H and L groups
@@ -313,35 +327,70 @@ class LEMOO:
         l_group = all_individuals[l_indices]
 
         # create training data to train an ML model:
-        # y_train: 1 equals good, -1 equals bad!
         x_train = np.vstack((h_group, l_group))
-        y_train = np.hstack(
-            (np.ones(len(h_group), dtype=int), -1 * np.ones(len(l_group), dtype=int))
-        )
 
-        classifier = self._ml_params.ml_model.fit(x_train, y_train)
-        self.current_ml_model = classifier
+        if isinstance(self._ml_params.ml_model, DecisionTreeClassifier):
+            # for tree, 1 good, -1 bad
+            y_train = np.hstack(
+                (
+                    np.ones(len(h_group), dtype=int),
+                    -1 * np.ones(len(l_group), dtype=int),
+                )
+            )
+        elif isinstance(self._ml_params.ml_model, SlipperClassifier):
+            # for slipper, 1 good, 0 bad
+            y_train = np.hstack(
+                (np.ones(len(h_group), dtype=int), np.zeros(len(l_group), dtype=int))
+            )
+        else:
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
-        # after training the model, it must be used to instantiate new individuals according to
-        # the H-group description. I.e., find new individuals that have a classification of 1.
-        # by default, instantiate twice as many new individuals as peresent in the whole history.
-        # this factor is controlled by the instantiation_factor argument (default 2)
+        n_to_instantiate = int(all_individuals.shape[0] * instantiation_factor)
 
-        # if tree used, TODO: for other models, some other instantiation routine must be performed
-        paths = find_all_paths(classifier)
-        n_to_instantiate = int(
-            all_individuals.shape[0] * instantiation_factor
-        )  # must be int to work
-        instantiated = instantiate_tree_rules(
-            paths,
-            self._problem.n_of_variables,
-            self._problem.get_variable_bounds(),
-            n_to_instantiate,
-            1,
-        )
+        # TODO: this is tree specific, check if tree or ruleset!
+        #
+        if isinstance(self._ml_params.ml_model, DecisionTreeClassifier):
+            # do tree stuff
+            classifier = self._ml_params.ml_model.fit(x_train, y_train)
+            self.current_ml_model = classifier
 
-        # reshape to have just a list of new individuals
-        instantiated = instantiated.reshape((-1, instantiated.shape[2]))
+            # after training the model, it must be used to instantiate new individuals according to
+            # the H-group description. I.e., find new individuals that have a classification of 1.
+            # by default, instantiate twice as many new individuals as peresent in the whole history.
+            # this factor is controlled by the instantiation_factor argument (default 2)
+
+            paths = find_all_paths(classifier)
+            instantiated = instantiate_tree_rules(
+                paths,
+                self._problem.n_of_variables,
+                self._problem.get_variable_bounds(),
+                n_to_instantiate,
+                1,
+            )
+
+            # reshape to have just a list of new individuals
+            instantiated = instantiated.reshape((-1, instantiated.shape[2]))
+
+        elif isinstance(self._ml_params.ml_model, SlipperClassifier):
+            # do Slipper stuff
+            classifier = self._ml_params.ml_model.fit(x_train, y_train)
+            self.current_ml_model = classifier
+
+            ruleset, weights = extract_slipper_rules(classifier)
+            instantiated = instantiate_ruleset_rules(
+                ruleset,
+                weights,
+                self._problem.n_of_variables,
+                self._problem.get_variable_bounds(),
+                n_to_instantiate,
+            )
+
+        else:
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
         # mix with the existing H-group
         instantiated_and_h = np.vstack((h_group, instantiated))
