@@ -47,9 +47,7 @@ def test_instantiate_ruleset_rules(dummy_slipper_classifier):
     n_features = 4
     n_samples = 1000
 
-    new_samples = instantiate_ruleset_rules(
-        rules_list, weights, n_features, feature_limits, n_samples
-    )
+    new_samples = instantiate_ruleset_rules(rules_list, weights, n_features, feature_limits, n_samples)
 
     assert new_samples.shape[1] == n_features
     # might not return exactly n_samples in total, but that is fine
@@ -64,9 +62,7 @@ def test__instantiate_ruleset_rules(dummy_slipper_classifier):
     n_features = 4
     n_samples = 1000
 
-    new_samples = _instantiate_ruleset_rules(
-        rules_list, weights, n_features, feature_limits, n_samples
-    )
+    new_samples = _instantiate_ruleset_rules(rules_list, weights, n_features, feature_limits, n_samples)
 
     assert len(new_samples) == 3
 
@@ -85,6 +81,26 @@ def test__instantiate_ruleset_rules(dummy_slipper_classifier):
 
 
 @pytest.mark.rulesets
+def test__instantiate_ruleset_rules_equalop(dummy_slipper_classifier):
+    rules_list = [
+        {("x_1", ">"): "8.0", ("x_3", "=="): "16.0"},
+        {("x_1", "="): "8.0", ("x_3", ">="): "16.0"},
+    ]
+    weights = [1, 1]
+
+    feature_limits = np.array([[0, 5], [5, 10], [10, 15], [15, 20]])
+    n_features = 4
+    n_samples = 1000
+
+    new_samples = _instantiate_ruleset_rules(rules_list, weights, n_features, feature_limits, n_samples)
+
+    assert len(new_samples) == 2
+
+    npt.assert_almost_equal(new_samples[0][:, 3], 16.0)
+    npt.assert_almost_equal(new_samples[1][:, 1], 8.0)
+
+
+@pytest.mark.rulesets
 def test__instantiate_ruleset_rules_negative_ws(dummy_slipper_classifier):
     rules_list, _ = extract_slipper_rules(dummy_slipper_classifier)
     weights = [0.5, -0.3, 0.9]
@@ -93,9 +109,7 @@ def test__instantiate_ruleset_rules_negative_ws(dummy_slipper_classifier):
     n_features = 4
     n_samples = 1000
 
-    new_samples = _instantiate_ruleset_rules(
-        rules_list, weights, n_features, feature_limits, n_samples
-    )
+    new_samples = _instantiate_ruleset_rules(rules_list, weights, n_features, feature_limits, n_samples)
 
     # one rule should be dropped with the negative weights
     assert len(new_samples) == 2
@@ -146,9 +160,7 @@ def test_instaniate_rules(dummy_slipper_classifier):
     # If redundant rules are given, the stricter is adheret to
     last_rule = rules_list[2]
 
-    new_samples_last = instantiate_rules(
-        last_rule, n_features, feature_limits, n_samples
-    )
+    new_samples_last = instantiate_rules(last_rule, n_features, feature_limits, n_samples)
 
     # check correct limits
     ## x_0 > 0, x_0 <5
