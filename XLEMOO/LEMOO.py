@@ -19,6 +19,7 @@ from imodels import SlipperClassifier
 
 from XLEMOO.tree_interpreter import find_all_paths, instantiate_tree_rules
 from XLEMOO.ruleset_interpreter import extract_slipper_rules, instantiate_ruleset_rules
+from XLEMOO.selection import SelectNBest
 
 
 class CrossOverOP(ABC):
@@ -50,6 +51,7 @@ class SelectionOP(ABC):
 
 
 SelectionOP.register(TournamentSelection)
+SelectionOP.register(SelectNBest)
 
 
 class ElitismOP(ABC):
@@ -496,6 +498,8 @@ class LEMOO:
 
             if not improved_in_learning and not improved_in_darwin:
                 keep_running = False
+
+            print(len(self._population.individuals))
 
         return counters
 

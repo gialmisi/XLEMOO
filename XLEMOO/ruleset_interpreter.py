@@ -134,6 +134,11 @@ def _instantiate_ruleset_rules(
     # each rule in the rule set.
     # ignore rules with negative weight
 
+    if len(weights) < len(rules):
+        # weights have been stopped to be added since the error of the
+        # classifier is so small, just use the rules thus far with the given weights.
+        rules = rules[: len(weights)]
+
     w_arr = np.array(weights)
 
     # ignore negative weights
