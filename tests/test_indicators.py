@@ -1,9 +1,11 @@
-from XLEMOO.fitness_indicators import asf_wrapper, naive_sum
+from XLEMOO.fitness_indicators import asf_wrapper, naive_sum, hypervolume_contribution
 from desdeo_tools.scalarization import SimpleASF, GuessASF
+from desdeo_tools.utilities import hypervolume_indicator
 from desdeo_problem.testproblems import test_problem_builder as problem_builder
 from desdeo_emo.population import Population
 import pytest
 import numpy as np
+import numpy.testing as npt
 
 
 @pytest.fixture
@@ -29,3 +31,31 @@ def test_asf_wrapper(dummy_population):
 
     # check shape
     assert fitness.shape == naive.shape
+
+
+@pytest.mark.fitness
+def test_hypervolume_contribution():
+
+    front = np.array(
+        [
+            # non-dominated points
+            [2.0, 5.0, 4.0],
+            [3.0, -1.5, 3.5],
+            [2.5, -0.5, 0.75],
+            # dominated point
+            [3.4, 5.5, 4.2],
+        ]
+    )
+
+    nadir = np.array([8.0, 8.0, 8.0])
+
+    hv_indicator = hypervolume_contribution(nadir)
+
+    contributions = hv_indicator(front)
+
+    baseline_hv = hypervolume_indicator(front, nadir)
+
+    npt.assert_almost_equal(contributions[3], 0)
+
+    # minus sign because hypervolume_contribution returns negative values
+    assert np.all(contributions > -baseline_hv)

@@ -100,14 +100,10 @@ class MLParams:
     H_split: float
     L_split: float
     ml_model: MLModel
-    ml_fitness: Callable[[Population], np.ndarray]
 
 
 @dataclass
 class LEMParams:
-    n_total_iterations: int
-    n_ea_gen_per_iter: int
-    n_ml_gen_per_iter: int
     use_ml: bool
     use_darwin: bool
     fitness_indicator: Callable[[np.ndarray], np.ndarray]
