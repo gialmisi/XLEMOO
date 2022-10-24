@@ -536,3 +536,28 @@ def test_run(toy_model):
 
     # the best fitness value should have changed
     assert toy_model._best_fitness_fun_value < np.inf
+
+
+@pytest.mark.lemoo
+def test_run_iterations(toy_model):
+    toy_model._lem_params.ml_probe = 5
+    toy_model._lem_params.darwin_probe = 5
+    toy_model._lem_params.ml_threshold = 0.999
+    toy_model._lem_params.darwin_threshold = 0.999
+    toy_model._lem_params.use_ml = True
+    toy_model._lem_params.use_darwin = True
+    toy_model._lem_params.total_iterations = 5
+
+    toy_model._ea_params.iterations_per_cycle = 5
+    toy_model._ml_params.iterations_per_cycle = 1
+
+    counters = toy_model.run_iterations()
+
+    assert counters["total_iterations"] == 5
+    assert counters["learning_mode"] == 5 * 1
+    assert counters["darwin_mode"] == 5 * 5
+
+    # the best fitness value should have changed
+    assert toy_model._best_fitness_fun_value < np.inf
+
+    print("poop")

@@ -532,6 +532,8 @@ class LEMOO:
 
             total_iterations += 1
 
+        counters.update({"total_iterations": total_iterations})
+
         return counters
 
 
