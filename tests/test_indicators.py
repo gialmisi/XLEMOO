@@ -116,6 +116,7 @@ def test_inside_ranges_with_sim():
             [1.2, 1.0000001, 0.7],  # -> 0.2
             [1.2, 1.0, 0.7],  # -> 0.2
             [1.1999999999, 1.0, 0.70000001],  # -> 0.2
+            [1.2001, 0.9998, 0.6999],  # -> no penalty!
         ]
     )
 
@@ -123,4 +124,4 @@ def test_inside_ranges_with_sim():
 
     breaches = indicator_f(front)
 
-    npt.assert_almost_equal(breaches, [0.1, 0.5, 0.5, 0.2, 3.4, 0.1, 0.2, 0.2, 0.2])
+    npt.assert_almost_equal(breaches, [0.1, 0.5, 0.5, 0.2, 3.4, 0.1, 0.2, 0.2, 0.2, 0])
