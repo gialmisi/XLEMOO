@@ -15,7 +15,7 @@ from desdeo_problem.problem import MOProblem
 import numpy as np
 
 from sklearn.tree import DecisionTreeClassifier
-from imodels import SlipperClassifier
+from imodels import SlipperClassifier, BoostedRulesClassifier
 
 from XLEMOO.tree_interpreter import find_all_paths, instantiate_tree_rules
 from XLEMOO.ruleset_interpreter import extract_slipper_rules, instantiate_ruleset_rules
@@ -78,6 +78,7 @@ class MLModel(ABC):
 # Register supported ML models here
 MLModel.register(DecisionTreeClassifier)
 MLModel.register(SlipperClassifier)
+MLModel.register(BoostedRulesClassifier)
 
 
 class DummyPopulation:
@@ -295,7 +296,7 @@ class LEMOO:
 
         return
 
-    def learning_mode(self, instantiation_factor: float = 2.0) -> None:
+    def learning_mode(self, instantiation_factor: float = 100.0) -> None:
         # collect all past generations and sort them in ascending order accoring to the fitness function values.
         (
             all_individuals,
@@ -338,7 +339,9 @@ class LEMOO:
                     -1 * np.ones(len(l_group), dtype=int),
                 )
             )
-        elif isinstance(self._ml_params.ml_model, SlipperClassifier):
+        elif isinstance(self._ml_params.ml_model, SlipperClassifier) or isinstance(
+            self._ml_params.ml_model, BoostedRulesClassifier
+        ):
             # for slipper, 1 good, 0 bad
             y_train = np.hstack(
                 (np.ones(len(h_group), dtype=int), np.zeros(len(l_group), dtype=int))
@@ -374,7 +377,9 @@ class LEMOO:
             # reshape to have just a list of new individuals
             instantiated = instantiated.reshape((-1, instantiated.shape[2]))
 
-        elif isinstance(self._ml_params.ml_model, SlipperClassifier):
+        elif isinstance(self._ml_params.ml_model, SlipperClassifier) or isinstance(
+            self._ml_params.ml_model, BoostedRulesClassifier
+        ):
             # do Slipper stuff
             classifier = self._ml_params.ml_model.fit(x_train, y_train)
             self.current_ml_model = classifier
@@ -531,6 +536,8 @@ class LEMOO:
                     iterations_in_ml += 1
 
             total_iterations += 1
+
+            print(".")
 
         counters.update({"total_iterations": total_iterations})
 

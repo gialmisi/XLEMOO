@@ -1,4 +1,9 @@
-from XLEMOO.fitness_indicators import asf_wrapper, naive_sum, hypervolume_contribution
+from XLEMOO.fitness_indicators import (
+    asf_wrapper,
+    naive_sum,
+    hypervolume_contribution,
+    inside_ranges,
+)
 from desdeo_tools.scalarization import SimpleASF, GuessASF
 from desdeo_tools.utilities import hypervolume_indicator
 from desdeo_problem.testproblems import test_problem_builder as problem_builder
@@ -59,3 +64,30 @@ def test_hypervolume_contribution():
 
     # minus sign because hypervolume_contribution returns negative values
     assert np.all(contributions > -baseline_hv)
+
+
+@pytest.mark.fitness
+def test_inside_ranges():
+    lower_limits = np.array([0.5, -1.5, 0.2])
+    upper_limits = np.array([2.5, 1.5, 0.8])
+
+    front = np.array(
+        [
+            # inside
+            [1.2, 0.9, 0.6],  # -> 0 good!
+            # first outside
+            [3.0, 1.2, 0.7],  # -> 0.5
+            # second outside
+            [1.3, -2.0, 0.3],  # -> 0.5
+            # third outside
+            [2.1, -1.3, 1.0],  # -> 0.2
+            # all breach
+            [-1.0, 3.0, 1.2],  # -> 1.5 + 1.5 + 0.4 = 3.4
+        ]
+    )
+
+    indicator_f = inside_ranges(lower_limits, upper_limits)
+
+    breaches = indicator_f(front)
+
+    npt.assert_almost_equal(breaches, [0, 0.5, 0.5, 0.2, 3.4])
