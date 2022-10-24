@@ -103,6 +103,7 @@ class MLParams:
     L_split: float
     ml_model: MLModel
     instantation_factor: float
+    generation_lookback: int
     iterations_per_cycle: int
 
 
@@ -288,12 +289,22 @@ class LEMOO:
     def learning_mode(self) -> None:
         instantiation_factor = self._ml_params.instantation_factor
 
-        # collect all past generations and sort them in ascending order accoring to the fitness function values.
+        if self._ml_params.generation_lookback <= 0:
+            lookback_n = len(self._generation_history)
+
+        else:
+            # if generation lookback is specified, then use at most that many past generations from the current generation
+            lookback_n = (
+                self._ml_params.generation_lookback
+                if self._ml_params.generation_lookback < len(self._generation_history)
+                else len(self._generation_history)
+            )
+
         (
             all_individuals,
             all_objectives_fitnesses,
             all_fitness_fun_values,
-        ) = self.collect_n_past_generations(len(self._generation_history))
+        ) = self.collect_n_past_generations(lookback_n)
 
         if not isinstance(self._ml_params.ml_model, MLModel):
             raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")

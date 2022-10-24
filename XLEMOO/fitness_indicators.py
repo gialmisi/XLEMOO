@@ -69,16 +69,13 @@ def inside_ranges(
     def fun(
         objective_vectors: np.ndarray, lower_limits=lower_limits, upper_limits=upper_limits, sim_cost=sim_cost
     ) -> np.ndarray:
-        lower_breach = np.where(
-            objective_vectors - lower_limits > 0,
-            0,
-            np.abs(objective_vectors - lower_limits),
-        )
-        upper_breach = np.where(
-            upper_limits - objective_vectors > 0,
-            0,
-            np.abs(upper_limits - objective_vectors),
-        )
+        # lower = np.where(a - lower_limits > 0, 0, np.abs(a - lower_limits))
+        lower_breach = np.where(objective_vectors - lower_limits > 0, 0, np.abs(objective_vectors - lower_limits))
+        upper_breach = np.where(upper_limits - objective_vectors > 0, 0, np.abs(upper_limits - objective_vectors))
+
+        if objective_vectors.shape[0] == 1:
+            print(upper_breach)
+            print(lower_breach)
 
         sum_of_breaches = np.sum(lower_breach + upper_breach, axis=1)
 
@@ -93,6 +90,6 @@ def inside_ranges(
 
             sum_of_breaches += similarity_penalties
 
-        return sum_of_breaches
+        return np.atleast_2d(sum_of_breaches).T
 
     return fun
