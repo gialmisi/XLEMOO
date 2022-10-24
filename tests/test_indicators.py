@@ -86,8 +86,41 @@ def test_inside_ranges():
         ]
     )
 
-    indicator_f = inside_ranges(lower_limits, upper_limits)
+    indicator_f = inside_ranges(lower_limits, upper_limits, sim_cost=0)
 
     breaches = indicator_f(front)
 
     npt.assert_almost_equal(breaches, [0, 0.5, 0.5, 0.2, 3.4])
+
+
+@pytest.mark.fitness
+def test_inside_ranges_with_sim():
+    lower_limits = np.array([0.5, -1.5, 0.2])
+    upper_limits = np.array([2.5, 1.5, 0.8])
+
+    front = np.array(
+        [
+            # same as last, should be penalized
+            [1.2, 0.9, 0.6],  # -> 0.1, same as last!
+            # first outside
+            [3.0, 1.2, 0.7],  # -> 0.5
+            # second outside
+            [1.3, -2.0, 0.3],  # -> 0.5
+            # third outside
+            [2.1, -1.3, 1.0],  # -> 0.2
+            # all breach
+            [-1.0, 3.0, 1.2],  # -> 1.5 + 1.5 + 0.4 = 3.4
+            # same as first, should be penalized
+            [1.2, 0.9, 0.6],  # -> 0.1, same as last!
+            # three times the same guy, very close
+            [1.2, 1.0000001, 0.7],  # -> 0.2
+            [1.2, 1.0, 0.7],  # -> 0.2
+            [1.1999999999, 1.0, 0.70000001],  # -> 0.2
+        ]
+    )
+
+    indicator_f = inside_ranges(lower_limits, upper_limits, sim_cost=0.1)
+
+    breaches = indicator_f(front)
+
+    npt.assert_almost_equal(breaches, [0.1, 0.5, 0.5, 0.2, 3.4, 0.1, 0.2, 0.2, 0.2])

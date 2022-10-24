@@ -67,9 +67,7 @@ def inside_ranges(
         raise ValueError(f"The shapes of lower_limits and upper_limits must match!")
 
     def fun(
-        objective_vectors: np.ndarray,
-        lower_limits=lower_limits,
-        upper_limits=upper_limits,
+        objective_vectors: np.ndarray, lower_limits=lower_limits, upper_limits=upper_limits, sim_cost=sim_cost
     ) -> np.ndarray:
         lower_breach = np.where(
             objective_vectors - lower_limits > 0,
@@ -84,74 +82,16 @@ def inside_ranges(
 
         sum_of_breaches = np.sum(lower_breach + upper_breach, axis=1)
 
-        # TODO: add penalty for non-zero elements
-        """
-        >>> b = a - a[:, None]
-        >>> b
-        array([[[ 0,  0,  0],
-                [ 3,  3,  3],
-                [ 6,  6,  6],
-                [ 9,  9,  9],
-                [ 6,  6,  6]],
+        if sim_cost > 0:
+            minus_each = objective_vectors - objective_vectors[:, None]
+            sums_of_differences = np.sum(minus_each, axis=2)
+            count_of_similars = np.count_nonzero(np.isclose(sums_of_differences, 0, atol=1e-6), axis=0)
 
-            [[-3, -3, -3],
-                [ 0,  0,  0],
-                [ 3,  3,  3],
-                [ 6,  6,  6],
-                [ 3,  3,  3]],
+            similarity_mask = count_of_similars > 1
 
-            [[-6, -6, -6],
-                [-3, -3, -3],
-                [ 0,  0,  0],
-                [ 3,  3,  3],
-                [ 0,  0,  0]],
+            similarity_penalties = np.where(similarity_mask, sim_cost * (count_of_similars - 1), 0)
 
-            [[-9, -9, -9],
-                [-6, -6, -6],
-                [-3, -3, -3],
-                [ 0,  0,  0],
-                [-3, -3, -3]],
-
-            [[-6, -6, -6],
-                [-3, -3, -3],
-                [ 0,  0,  0],
-                [ 3,  3,  3],
-                [ 0,  0,  0]]])
-        >>> np.sum(b, axis=0)
-        array([[-24, -24, -24],
-            [ -9,  -9,  -9],
-            [  6,   6,   6],
-            [ 21,  21,  21],
-            [  6,   6,   6]])
-        >>> np.sum(b, axis=1)
-        array([[ 24,  24,  24],
-            [  9,   9,   9],
-            [ -6,  -6,  -6],
-            [-21, -21, -21],
-            [ -6,  -6,  -6]])
-        >>> np.sum(b, axis=2)
-        array([[  0,   9,  18,  27,  18],
-            [ -9,   0,   9,  18,   9],
-            [-18,  -9,   0,   9,   0],
-            [-27, -18,  -9,   0,  -9],
-            [-18,  -9,   0,   9,   0]])
-        >>> a
-        array([[ 1,  2,  3],
-            [ 4,  5,  6],
-            [ 7,  8,  9],
-            [10, 11, 12],
-            [ 7,  8,  9]])
-        >>> sum_b = np.sum(b, axis=2)
-        >>> sum_b
-        array([[  0,   9,  18,  27,  18],
-            [ -9,   0,   9,  18,   9],
-            [-18,  -9,   0,   9,   0],
-            [-27, -18,  -9,   0,  -9],
-            [-18,  -9,   0,   9,   0]])
-        >>> np.count_nonzero(sum_b == 0, axis=0)
-        array([1, 1, 2, 1, 2])
-        >>> 
-        """
+            sum_of_breaches += similarity_penalties
 
         return sum_of_breaches
 

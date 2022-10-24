@@ -30,14 +30,12 @@ def test_subclasses():
 def test_init():
     problem = problem_builder("DTLZ2", 3, 2)
     xover_op = SBX_xover()
-    mutation_op = BP_mutation(
-        problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds()
-    )
+    mutation_op = BP_mutation(problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds())
     selection_op = TournamentSelection(None, tournament_size=2)
 
     lem_params = LEMParams(True, True, naive_sum, 10, 10, 1.05, 1.05, 10)
     ea_params = EAParams(50, xover_op, mutation_op, selection_op, "RandomDesign", 10)
-    ml_params = MLParams(0.3, 0.3, DecisionTreeClassifier(), 1)
+    ml_params = MLParams(0.3, 0.3, DecisionTreeClassifier(), 1, 1.0)
 
     lemoo = LEMOO(problem, lem_params, ea_params, ml_params)
 
@@ -84,9 +82,7 @@ def test_darwin_mode(toy_model):
     # If nothing is raised (the test fails), it means that the two
     # poulations have exactly the same size and individuals, thus, the
     # test fails as expected.
-    npt.assert_raises(
-        AssertionError, npt.assert_allclose, old_individuals, new_individuals
-    )
+    npt.assert_raises(AssertionError, npt.assert_allclose, old_individuals, new_individuals)
 
     assert len(new_individuals.shape) == 2
 
@@ -140,9 +136,7 @@ def test_add_population_to_history_manually(toy_model):
     # add these to the history a bunch of times
     n_times = 10
     for _ in range(n_times):
-        toy_model.add_population_to_history(
-            individuals=individuals, objectives_fitnesses=objective_fitnesses
-        )
+        toy_model.add_population_to_history(individuals=individuals, objectives_fitnesses=objective_fitnesses)
 
     # check correct length of history
     assert len(toy_model._generation_history) == n_times
@@ -181,9 +175,7 @@ def test_collect_population(toy_model):
     # add these to the history a bunch of times
     n_times = 10
     for _ in range(n_times):
-        toy_model.add_population_to_history(
-            individuals=individuals, objectives_fitnesses=objectives_fitnesses
-        )
+        toy_model.add_population_to_history(individuals=individuals, objectives_fitnesses=objectives_fitnesses)
 
     # check correct length of history
     assert len(toy_model._generation_history) == n_times
@@ -320,10 +312,7 @@ def test_run_darwin_only(toy_model):
     counters = toy_model.run()
 
     # the new best solution should be better than the given threshold times initial_best
-    assert (
-        toy_model._best_fitness_fun_value
-        < toy_model._lem_params.darwin_threshold * initial_best
-    )
+    assert toy_model._best_fitness_fun_value < toy_model._lem_params.darwin_threshold * initial_best
 
     # reset history
     toy_model.reset_generation_history()
@@ -343,17 +332,12 @@ def test_run_darwin_only(toy_model):
     assert counters_forced["darwin_mode"] == toy_model._lem_params.darwin_probe
 
     # the current best solution should be worse than given threshold time initial_best
-    assert (
-        toy_model._best_fitness_fun_value
-        >= toy_model._lem_params.darwin_threshold * initial_best
-    )
+    assert toy_model._best_fitness_fun_value >= toy_model._lem_params.darwin_threshold * initial_best
 
 
 @pytest.mark.lemoo
 def test_update_best_fitness(toy_model):
-    new_individuals = np.array(
-        [[0.3, 0.3, 0.3], [0.2, 0.2, 0.2], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7]]
-    )
+    new_individuals = np.array([[0.3, 0.3, 0.3], [0.2, 0.2, 0.2], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7]])
     toy_model.update_population(new_individuals)
 
     assert len(toy_model._population.individuals) == 4
@@ -378,9 +362,7 @@ def test_update_best_fitness(toy_model):
 @pytest.mark.lemoo
 def test_update_best_fitness_no_update(toy_model):
     # the best fitness should be updated only if a better fitness is found in the current population.
-    new_individuals = np.array(
-        [[0.3, 0.3, 0.3], [0.2, 0.2, 0.2], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7]]
-    )
+    new_individuals = np.array([[0.3, 0.3, 0.3], [0.2, 0.2, 0.2], [0.5, 0.5, 0.5], [0.7, 0.7, 0.7]])
     toy_model.update_population(new_individuals)
 
     assert len(toy_model._population.individuals) == 4
@@ -444,10 +426,7 @@ def test_run_learning_mode_only_tree(toy_model):
     counters = toy_model.run()
 
     # the new best solution should be better than the given threshold times initial_best
-    assert (
-        toy_model._best_fitness_fun_value
-        < toy_model._lem_params.ml_threshold * initial_best
-    )
+    assert toy_model._best_fitness_fun_value < toy_model._lem_params.ml_threshold * initial_best
 
     # reset history
     toy_model.reset_generation_history()
@@ -467,10 +446,7 @@ def test_run_learning_mode_only_tree(toy_model):
     assert counters_forced["learning_mode"] == toy_model._lem_params.ml_probe
 
     # the current best solution should be worse than given threshold time initial_best
-    assert (
-        toy_model._best_fitness_fun_value
-        >= toy_model._lem_params.ml_threshold * initial_best
-    )
+    assert toy_model._best_fitness_fun_value >= toy_model._lem_params.ml_threshold * initial_best
 
 
 @pytest.mark.lemoo
@@ -490,10 +466,7 @@ def test_run_learning_mode_only_slipper(toy_model):
     counters = toy_model.run()
 
     # the new best solution should be better than the given threshold times initial_best
-    assert (
-        toy_model._best_fitness_fun_value
-        < toy_model._lem_params.ml_threshold * initial_best
-    )
+    assert toy_model._best_fitness_fun_value < toy_model._lem_params.ml_threshold * initial_best
 
     # reset history
     toy_model.reset_generation_history()
@@ -513,10 +486,7 @@ def test_run_learning_mode_only_slipper(toy_model):
     assert counters_forced["learning_mode"] == toy_model._lem_params.ml_probe
 
     # the current best solution should be worse than given threshold time initial_best
-    assert (
-        toy_model._best_fitness_fun_value
-        >= toy_model._lem_params.ml_threshold * initial_best
-    )
+    assert toy_model._best_fitness_fun_value >= toy_model._lem_params.ml_threshold * initial_best
 
 
 @pytest.mark.lemoo
