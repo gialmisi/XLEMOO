@@ -93,6 +93,7 @@ class EAParams:
     mutation_op: MutationOP
     selection_op: SelectionOP
     population_init_design: str
+    iterations_per_cycle: int
 
 
 @dataclass
@@ -100,6 +101,7 @@ class MLParams:
     H_split: float
     L_split: float
     ml_model: MLModel
+    iterations_per_cycle: int
 
 
 @dataclass
@@ -111,6 +113,7 @@ class LEMParams:
     darwin_probe: int
     ml_threshold: float
     darwin_threshold: float
+    total_iterations: int
 
 
 @dataclass
@@ -495,7 +498,39 @@ class LEMOO:
             if not improved_in_learning and not improved_in_darwin:
                 keep_running = False
 
-            print(len(self._population.individuals))
+        return counters
+
+    def run_iterations(self) -> Dict:
+        # counters:
+        counters = {"darwin_mode": 0, "learning_mode": 0}
+
+        total_iterations: int = 0
+
+        while total_iterations < self._lem_params.total_iterations:
+
+            # Darwinian (ea) mode
+            if self._lem_params.use_darwin:
+                iterations_in_ea: int = 0
+
+                while iterations_in_ea < self._ea_params.iterations_per_cycle:
+                    # we assume the population has been saved in a previous iteration
+                    self.darwinian_mode()
+                    self.add_population_to_history()
+                    counters["darwin_mode"] += 1
+                    iterations_in_ea += 1
+
+            # start in ML mode
+            if self._lem_params.use_ml:
+                iterations_in_ml: int = 0
+
+                while iterations_in_ml < self._ml_params.iterations_per_cycle:
+                    # always assume previous population has been saved to history before
+                    self.learning_mode()
+                    self.add_population_to_history()
+                    counters["learning_mode"] += 1
+                    iterations_in_ml += 1
+
+            total_iterations += 1
 
         return counters
 

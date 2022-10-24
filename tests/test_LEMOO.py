@@ -35,9 +35,9 @@ def test_init():
     )
     selection_op = TournamentSelection(None, tournament_size=2)
 
-    lem_params = LEMParams(True, True, naive_sum, 10, 10, 1.05, 1.05)
-    ea_params = EAParams(50, xover_op, mutation_op, selection_op, "RandomDesign")
-    ml_params = MLParams(0.3, 0.3, DecisionTreeClassifier())
+    lem_params = LEMParams(True, True, naive_sum, 10, 10, 1.05, 1.05, 10)
+    ea_params = EAParams(50, xover_op, mutation_op, selection_op, "RandomDesign", 10)
+    ml_params = MLParams(0.3, 0.3, DecisionTreeClassifier(), 1)
 
     lemoo = LEMOO(problem, lem_params, ea_params, ml_params)
 
