@@ -559,5 +559,3 @@ def test_run_iterations(toy_model):
 
     # the best fitness value should have changed
     assert toy_model._best_fitness_fun_value < np.inf
-
-    print("poop")
