@@ -5,8 +5,10 @@ from .LEMOO import PastGeneration
 from desdeo_tools.utilities.quality_indicator import hypervolume_indicator
 
 
-def plot_best_fitnesses(generations: List[PastGeneration]) -> None:
+def plot_best_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
     best_values = np.array([np.min(gen.fitness_fun_values) for gen in generations])
+    if ylog:
+        plt.yscale("log")
     plt.plot(np.arange(best_values.shape[0]), best_values)
 
     return

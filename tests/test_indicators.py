@@ -90,7 +90,7 @@ def test_inside_ranges():
 
     breaches = indicator_f(front)
 
-    npt.assert_almost_equal(breaches, [0, 0.5, 0.5, 0.2, 3.4])
+    npt.assert_almost_equal(breaches, np.atleast_2d([0, 0.5, 0.5, 0.2, 3.4]).T)
 
 
 @pytest.mark.fitness
@@ -124,4 +124,6 @@ def test_inside_ranges_with_sim():
 
     breaches = indicator_f(front)
 
-    npt.assert_almost_equal(breaches, [0.1, 0.5, 0.5, 0.2, 3.4, 0.1, 0.2, 0.2, 0.2, 0])
+    npt.assert_almost_equal(
+        breaches, np.atleast_2d([0.1, 0.5, 0.5, 0.2, 3.4, 0.1, 0.2, 0.2, 0.2, 0]).T
+    )

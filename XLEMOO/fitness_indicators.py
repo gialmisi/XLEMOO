@@ -61,17 +61,31 @@ def hypervolume_contribution(
 
 
 def inside_ranges(
-    lower_limits: np.ndarray, upper_limits: np.ndarray, sim_cost: float
+    lower_limits: np.ndarray,
+    upper_limits: np.ndarray,
+    sim_cost: float,
+    asf_fun: Callable[[np.ndarray], np.ndarray] = None,
 ) -> Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
     if lower_limits.shape != upper_limits.shape:
         raise ValueError(f"The shapes of lower_limits and upper_limits must match!")
 
     def fun(
-        objective_vectors: np.ndarray, lower_limits=lower_limits, upper_limits=upper_limits, sim_cost=sim_cost
+        objective_vectors: np.ndarray,
+        lower_limits=lower_limits,
+        upper_limits=upper_limits,
+        sim_cost=sim_cost,
     ) -> np.ndarray:
         # lower = np.where(a - lower_limits > 0, 0, np.abs(a - lower_limits))
-        lower_breach = np.where(objective_vectors - lower_limits > 0, 0, np.abs(objective_vectors - lower_limits))
-        upper_breach = np.where(upper_limits - objective_vectors > 0, 0, np.abs(upper_limits - objective_vectors))
+        lower_breach = np.where(
+            objective_vectors - lower_limits > 0,
+            0,
+            np.abs(objective_vectors - lower_limits),
+        )
+        upper_breach = np.where(
+            upper_limits - objective_vectors > 0,
+            0,
+            np.abs(upper_limits - objective_vectors),
+        )
 
         if objective_vectors.shape[0] == 1:
             print(upper_breach)
@@ -79,14 +93,27 @@ def inside_ranges(
 
         sum_of_breaches = np.sum(lower_breach + upper_breach, axis=1)
 
+        if asf_fun is not None:
+            # add asf contribution
+            sum_of_breaches = np.where(
+                np.isclose(sum_of_breaches, 0),
+                sum_of_breaches + asf_fun(objective_vectors).T,
+                sum_of_breaches,
+            )
+
         if sim_cost > 0:
+            # add similarity cost
             minus_each = objective_vectors - objective_vectors[:, None]
             sums_of_differences = np.sum(minus_each, axis=2)
-            count_of_similars = np.count_nonzero(np.isclose(sums_of_differences, 0, atol=1e-6), axis=0)
+            count_of_similars = np.count_nonzero(
+                np.isclose(sums_of_differences, 0, atol=1e-6), axis=0
+            )
 
             similarity_mask = count_of_similars > 1
 
-            similarity_penalties = np.where(similarity_mask, sim_cost * (count_of_similars - 1), 0)
+            similarity_penalties = np.where(
+                similarity_mask, sim_cost * (count_of_similars - 1), 0
+            )
 
             sum_of_breaches += similarity_penalties
 
