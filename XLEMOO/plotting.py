@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from typing import List
 from .LEMOO import PastGeneration
 from desdeo_tools.utilities.quality_indicator import hypervolume_indicator
+from imodels.util.rule import Rule
 
 
 def plot_best_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
@@ -29,12 +30,13 @@ def plot_std_fitnesses(generations: List[PastGeneration]) -> None:
 
 
 def plot_hypervolume(generations: List[PastGeneration], ref_point: np.ndarray) -> None:
-    hwas = np.array(
-        [
-            hypervolume_indicator(gen.objectives_fitnesses, ref_point)
-            for gen in generations
-        ]
-    )
+    hwas = np.array([hypervolume_indicator(gen.objectives_fitnesses, ref_point) for gen in generations])
     plt.plot(np.arange(hwas.shape[0]), hwas)
 
     return
+
+
+def show_rules(rules: List[Rule]) -> None:
+    print("Rule -> Accuracy:")
+    for rule in rules:
+        print(f"{rule} --> {rule.args[0]}")
