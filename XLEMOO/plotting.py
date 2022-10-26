@@ -15,8 +15,10 @@ def plot_best_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
     return
 
 
-def plot_mean_fitnesses(generations: List[PastGeneration]) -> None:
+def plot_mean_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
     mean_values = np.array([np.mean(gen.fitness_fun_values) for gen in generations])
+    if ylog:
+        plt.yscale("log")
     plt.plot(np.arange(mean_values.shape[0]), mean_values)
 
     return

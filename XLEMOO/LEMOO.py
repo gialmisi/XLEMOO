@@ -110,6 +110,7 @@ class MLParams:
     instantation_factor: float
     generation_lookback: int
     ancestral_recall: int
+    unique_only: bool
     iterations_per_cycle: int
 
 
@@ -251,7 +252,7 @@ class LEMOO:
 
         return
 
-    def collect_n_past_generations(self, n: int, ancestral_recall: int = 0):
+    def collect_n_past_generations(self, n: int, ancestral_recall: int = 0, unique_only=False):
         """Collect the n past generations into a single numpy array for easier handling.
         Returns the collected individuals, objective fitness values, and fitness function values.
 
@@ -279,6 +280,13 @@ class LEMOO:
         individuals = np.concatenate([gen.individuals for gen in past_slice])
         objectives_fitnesses = np.concatenate([gen.objectives_fitnesses for gen in past_slice])
         fitness_fun_values = np.concatenate([gen.fitness_fun_values for gen in past_slice])
+
+        if unique_only:
+            # return only unique individuals,
+            _, unique_inds = np.unique(individuals, return_index=True, axis=0)
+            individuals = individuals[unique_inds]
+            objectives_fitnesses = objectives_fitnesses[unique_inds]
+            fitness_fun_values = fitness_fun_values[unique_inds]
 
         return (
             np.atleast_2d(individuals),
@@ -317,7 +325,7 @@ class LEMOO:
             all_individuals,
             all_objectives_fitnesses,
             all_fitness_fun_values,
-        ) = self.collect_n_past_generations(lookback_n)
+        ) = self.collect_n_past_generations(lookback_n, unique_only=self._ml_params.unique_only)
 
         if not isinstance(self._ml_params.ml_model, MLModel):
             raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")
