@@ -13,8 +13,8 @@ from imodels import SkopeRulesClassifier
 import json
 from datetime import datetime
 
-n_objectives = 3
-n_variables = 5
+n_objectives = snakemake.config["n_objectives"]
+n_variables = snakemake.config["n_variables"]
 
 nadir = np.array([1700.0, 12.0, 0.2])
 ideal = np.array([1600.0, 6.0, 0.038])
@@ -27,13 +27,18 @@ problem_name = "vehicle crash worthiness"
 fitness_fun = asf_wrapper(PointMethodASF(nadir=nadir, ideal=ideal), {"reference_point": ref_point})
 fitness_fun_name = "PointMethodASF"
 
-use_darwin = True
-use_ml = True
-ml_probe = None
-ml_threshold = None
-darwin_probe = None
-darwin_threshold = None
-total_iterations = 5  # TODO: must be calculated
+n_total_iterations = snakemake.config["total_iterations"]
+ml_every_n = int(snakemake.wildcards["ml_every"])
+n_ea_per_cycle = int(n_total_iterations / ml_every_n) - 1
+lemoo_total_iterations = ml_every_n
+
+use_darwin = snakemake.config["use_darwin"]
+use_ml = snakemake.config["use_ml"]
+ml_probe = snakemake.config["ml_probe"]
+ml_threshold = snakemake.config["ml_threshold"]
+darwin_probe = snakemake.config["darwin_probe"]
+darwin_threshold = snakemake.config["darwin_threshold"]
+total_iterations = lemoo_total_iterations
 
 lem_params = LEMParams(
     use_darwin=use_darwin,
@@ -46,12 +51,12 @@ lem_params = LEMParams(
     total_iterations=total_iterations,
 )
 
-pop_size = 200
+pop_size = snakemake.config["pop_size"]
 cross_over_op = SBX_xover()
 mutation_op = BP_mutation(problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds())
 selection_op = SelectNBest(None, pop_size)
-populatin_init_design = "LHSDesign"
-ea_iterations_per_cycle = 1
+populatin_init_design = snakemake.config["population_init_design"]
+ea_iterations_per_cycle = n_ea_per_cycle
 
 ea_params = EAParams(
     population_size=pop_size,
@@ -62,13 +67,13 @@ ea_params = EAParams(
     iterations_per_cycle=ea_iterations_per_cycle,
 )
 
-ml_model_name = "SkopedRuleClassifier"
-ml_precision_min = 0.1
-ml_n_estimators = 30
-ml_max_features = None
-ml_max_depth = None
-ml_bootstrap = True
-ml_bootstrap_features = True
+ml_model_name = snakemake.config["ml_model_name"]
+ml_precision_min = snakemake.config["ml_precision_min"]
+ml_n_estimators = snakemake.config["ml_n_estimators"]
+ml_max_features = snakemake.config["ml_max_features"]
+ml_max_depth = snakemake.config["ml_max_depth"]
+ml_bootstrap = snakemake.config["ml_bootstrap"]
+ml_bootstrap_features = snakemake.config["ml_bootstrap_features"]
 
 ml = SkopeRulesClassifier(
     precision_min=ml_precision_min,
@@ -79,13 +84,13 @@ ml = SkopeRulesClassifier(
     bootstrap_features=ml_bootstrap_features,
 )
 
-h_split = 0.2
-l_split = 0.2
-instantation_factor = 10
-generation_lookback = 0
-ancestral_recall = 0
-unique_only = True
-ml_iterations_per_cycle = 1
+h_split = int(snakemake.wildcards["hlsplit"]) / 100
+l_split = int(snakemake.wildcards["hlsplit"]) / 100
+instantation_factor = snakemake.config["instantation_factor"]
+generation_lookback = snakemake.config["generation_lookback"]
+ancestral_recall = snakemake.config["ancestral_recall"]
+unique_only = snakemake.config["unique_only"]
+ml_iterations_per_cycle = snakemake.config["ml_iterations_per_cycle"]
 
 ml_params = MLParams(
     H_split=h_split,
@@ -100,6 +105,7 @@ ml_params = MLParams(
 
 lemoo = LEMOO(problem, lem_params, ea_params, ml_params)
 
+print(f"Generating {snakemake.output[0]}...")
 lemoo.run_iterations()
 
 data = {"individuals": [], "fitness_fun_values": [], "objective_values": []}
@@ -113,6 +119,7 @@ info = {
     "nadir": nadir.tolist(),
     "ref_point": ref_point.tolist(),
     "fitness_fun": fitness_fun_name,
+    "n_total_iterations": n_total_iterations,
 }
 
 data["info"] = info
@@ -164,5 +171,5 @@ for gen in lemoo._generation_history:
 
 print(f"Done. Len of generation history: {len(lemoo._generation_history)}")
 
-with open("./data.json", "w") as f:
+with open(snakemake.output[0], "w") as f:
     json.dump(data, f)
