@@ -1,15 +1,15 @@
 configfile: "experiments.yaml"
 problem_name = config["problem"]
 
-rule all:
+# EXPERIMENT 1
+rule all_parameters_experiment_1:
     input:
-        expand("data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_{problem_name}.json",
+        expand("data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_vehiclecrashworthiness.json",
             run_i=range(1, config["runs_per_experiment"]+1),
             ml_every=config["ml_every_n"],
             hlsplit=[int(100*split) for split in config["hl_split"]],
             problem_name=problem_name
             )
-
 
 rule parameters_experiment_1:
     params:
@@ -18,12 +18,28 @@ rule parameters_experiment_1:
         hlsplit={"hlsplit"},
         problem_name={"problem_name"}
     output:
-        "data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_{problem_name}.json" 
+        "data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_vehiclecrashworthiness.json" 
     script:
-        "scripts/run_w_freq_and_split.py"
+        "scripts/vehicle_crash_worthiness.py"
 
-rule run_test_1:
+
+# EXPERIMENT 2
+rule all_parameters_experiment_2:
+    input:
+        expand("data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_carsideimpact.json",
+            run_i=range(1, config["runs_per_experiment"]+1),
+            ml_every=config["ml_every_n"],
+            hlsplit=[int(100*split) for split in config["hl_split"]],
+            problem_name=problem_name
+            )
+
+rule parameters_experiment_2:
+    params:
+        run_i={"run_i"},
+        ml_every={"ml_every"},
+        hlsplit={"hlsplit"},
+        problem_name={"problem_name"}
     output:
-        "data/output.dat"
-    shell:
-        "echo 'hello' > data/output.dat"
+        "data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_carsideimpact.json" 
+    script:
+        "scripts/carside_impact.py"
