@@ -118,7 +118,7 @@ class MLParams:
 class LEMParams:
     use_ml: bool
     use_darwin: bool
-    fitness_indicator: Callable[[np.ndarray], np.ndarray]
+    fitness_indicator: Callable[[np.ndarray, Optional[np.ndarray]], np.ndarray]
     ml_probe: int
     darwin_probe: int
     ml_threshold: float
@@ -210,7 +210,9 @@ class LEMOO:
         Returns:
             bool: True if the best fitness was updated, otherwise False.
         """
-        fitness_fun_values = self._lem_params.fitness_indicator(self._population.fitness)
+        fitness_fun_values = self._lem_params.fitness_indicator(
+            self._population.fitness, self._population.individuals
+        )
         min_value = np.min(fitness_fun_values)
 
         if min_value < self._best_fitness_fun_value:
@@ -227,16 +229,20 @@ class LEMOO:
         objectives_fitnesses: Optional[np.ndarray] = None,
     ) -> None:
         if individuals is not None and objectives_fitnesses is not None:
-            # add current population to history
-            fitness_fun_values = self._lem_params.fitness_indicator(objectives_fitnesses)
+            # add supplied individuals and fitnesses to history
+            fitness_fun_values = self._lem_params.fitness_indicator(
+                objectives_fitnesses, individuals
+            )
             gen = PastGeneration(individuals, objectives_fitnesses, fitness_fun_values)
             self._generation_history.append(gen)
 
             return
 
         else:
-            # add supplied individuals and fitnesses to history
-            fitness_fun_values = self._lem_params.fitness_indicator(self._population.fitness)
+            # add current population to history
+            fitness_fun_values = self._lem_params.fitness_indicator(
+                self._population.fitness, self._population.individuals
+            )
             gen = PastGeneration(
                 self._population.individuals,
                 self._population.fitness,
@@ -252,7 +258,9 @@ class LEMOO:
 
         return
 
-    def collect_n_past_generations(self, n: int, ancestral_recall: int = 0, unique_only=False):
+    def collect_n_past_generations(
+        self, n: int, ancestral_recall: int = 0, unique_only=False
+    ):
         """Collect the n past generations into a single numpy array for easier handling.
         Returns the collected individuals, objective fitness values, and fitness function values.
 
@@ -278,8 +286,12 @@ class LEMOO:
             past_slice = ancestral_slice + past_slice
 
         individuals = np.concatenate([gen.individuals for gen in past_slice])
-        objectives_fitnesses = np.concatenate([gen.objectives_fitnesses for gen in past_slice])
-        fitness_fun_values = np.concatenate([gen.fitness_fun_values for gen in past_slice])
+        objectives_fitnesses = np.concatenate(
+            [gen.objectives_fitnesses for gen in past_slice]
+        )
+        fitness_fun_values = np.concatenate(
+            [gen.fitness_fun_values for gen in past_slice]
+        )
 
         if unique_only:
             # return only unique individuals,
@@ -300,7 +312,9 @@ class LEMOO:
         offspring = self._population.mate()
         self._population.add(offspring, False)
 
-        fitness_fun_values = self._lem_params.fitness_indicator(self._population.fitness)
+        fitness_fun_values = self._lem_params.fitness_indicator(
+            self._population.fitness, self._population.individuals
+        )
         selected = self._ea_params.selection_op.do(self._population, fitness_fun_values)
 
         self._population.keep(selected)
@@ -325,10 +339,14 @@ class LEMOO:
             all_individuals,
             all_objectives_fitnesses,
             all_fitness_fun_values,
-        ) = self.collect_n_past_generations(lookback_n, unique_only=self._ml_params.unique_only)
+        ) = self.collect_n_past_generations(
+            lookback_n, unique_only=self._ml_params.unique_only
+        )
 
         if not isinstance(self._ml_params.ml_model, MLModel):
-            raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
         sorted_indices = np.argsort(np.squeeze(all_fitness_fun_values))
 
@@ -357,7 +375,9 @@ class LEMOO:
         # because the indices are now sorted, we can just pick the top best and bottom worst
         # and set them as the H and L groups
         h_indices = sorted_indices[0:h_split_id]
-        l_indices = sorted_indices[-l_split_id:][::-1]  # reversing might not really be needed here
+        l_indices = sorted_indices[-l_split_id:][
+            ::-1
+        ]  # reversing might not really be needed here
 
         # pick the individuals according to the calculated indices
         h_group = all_individuals[h_indices]
@@ -383,9 +403,13 @@ class LEMOO:
             or isinstance(self._ml_params.ml_model, SkopeRulesClassifier)
         ):
             # 1: target, 0: other
-            y_train = np.hstack((np.ones(len(h_group), dtype=int), np.zeros(len(l_group), dtype=int)))
+            y_train = np.hstack(
+                (np.ones(len(h_group), dtype=int), np.zeros(len(l_group), dtype=int))
+            )
         else:
-            raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
         n_to_instantiate = int(all_individuals.shape[0] * instantiation_factor)
 
@@ -444,7 +468,9 @@ class LEMOO:
             )
 
         else:
-            raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
         # mix with the existing H-group
         instantiated_and_h = np.vstack((h_group, instantiated))
@@ -453,7 +479,9 @@ class LEMOO:
         objective_fitnesses_new = self._problem.evaluate(instantiated_and_h).fitness
 
         # compute fitness fun values
-        fitness_fun_values_new = self._lem_params.fitness_indicator(objective_fitnesses_new)
+        fitness_fun_values_new = self._lem_params.fitness_indicator(
+            objective_fitnesses_new, instantiated_and_h
+        )
 
         # sort the individuals according to their fitness value in ascending order
         sorted_indices_new = np.argsort(np.squeeze(fitness_fun_values_new))
@@ -485,7 +513,9 @@ class LEMOO:
         best_idx = np.argmin(past_fitness_fun_values)
 
         # check condition
-        if ((past_fitness_fun_values[best_idx] / self._best_fitness_fun_value)) < threshold:
+        if (
+            (past_fitness_fun_values[best_idx] / self._best_fitness_fun_value)
+        ) < threshold:
             self._best_fitness_fun_value = past_fitness_fun_values[best_idx][0]
 
             return True
@@ -515,7 +545,9 @@ class LEMOO:
                     learning_iters += 1
 
                     # check generations saved so far in learning more if they meet the termination criterion
-                    if self.check_condition_best(learning_iters, self._lem_params.ml_threshold):
+                    if self.check_condition_best(
+                        learning_iters, self._lem_params.ml_threshold
+                    ):
                         improved_in_learning = True
                         break
             else:
@@ -534,7 +566,9 @@ class LEMOO:
                     # iterate until condition is True
                     # check the generations saved so far in Darwin mode, that is
                     # why we keep the darwin_iters counter.
-                    if self.check_condition_best(darwin_iters, self._lem_params.darwin_threshold):
+                    if self.check_condition_best(
+                        darwin_iters, self._lem_params.darwin_threshold
+                    ):
                         improved_in_darwin = True
                         break
             else:
