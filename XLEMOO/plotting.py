@@ -9,7 +9,7 @@ from imodels.util.rule import Rule
 def plot_best_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
     best_values = np.array([np.min(gen.fitness_fun_values) for gen in generations])
     if ylog:
-        plt.yscale("log")
+        plt.yscale("symlog")
     plt.plot(np.arange(best_values.shape[0]), best_values)
 
     return
@@ -18,7 +18,7 @@ def plot_best_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
 def plot_mean_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
     mean_values = np.array([np.mean(gen.fitness_fun_values) for gen in generations])
     if ylog:
-        plt.yscale("log")
+        plt.yscale("symlog")
     plt.plot(np.arange(mean_values.shape[0]), mean_values)
 
     return
@@ -32,7 +32,12 @@ def plot_std_fitnesses(generations: List[PastGeneration]) -> None:
 
 
 def plot_hypervolume(generations: List[PastGeneration], ref_point: np.ndarray) -> None:
-    hwas = np.array([hypervolume_indicator(gen.objectives_fitnesses, ref_point) for gen in generations])
+    hwas = np.array(
+        [
+            hypervolume_indicator(gen.objectives_fitnesses, ref_point)
+            for gen in generations
+        ]
+    )
     plt.plot(np.arange(hwas.shape[0]), hwas)
 
     return
