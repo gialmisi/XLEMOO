@@ -44,7 +44,7 @@ rule parameters_experiment:
     output:
         "data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_{problem_name}.json" 
     script:
-        "scripts/{script_name}"
+        "scripts/multiple_clutch_brakes.py"
 
 # EXPERIMENT, calcualte statistics from data
 rule all_statistics:
