@@ -1,4 +1,5 @@
 configfile: "experiments.yaml"
+script_name = config["script_name"]
 problem_name = config["problem"]
 
 """"
@@ -43,7 +44,7 @@ rule parameters_experiment:
     output:
         "data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_{problem_name}.json" 
     script:
-        "scripts/carside_impact.py"
+        "scripts/{script_name}"
 
 # EXPERIMENT, calcualte statistics from data
 rule all_statistics:

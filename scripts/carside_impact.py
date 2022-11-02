@@ -16,10 +16,10 @@ from datetime import datetime
 n_objectives = snakemake.config["n_objectives"]
 n_variables = snakemake.config["n_variables"]
 
-nadir = np.array([40.0, 5.0, 14.0, 30.0])
-ideal = np.array([15.0, 3.0, 10.0, 0.0])
+nadir = np.array(snakemake.config["nadir"])
+ideal = np.array(snakemake.config["ideal"])
 
-ref_point = np.array([20.0, 3.5, 11.0, 0.1])
+ref_point = np.array(snakemake.config["ref_point"])
 
 problem = car_side_impact(three_obj=False)
 problem_name = "car_side_impact"
