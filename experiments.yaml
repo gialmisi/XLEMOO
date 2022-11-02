@@ -2,12 +2,13 @@
 total_iterations: 2000
 ml_every_n: [2, 4, 5, 8, 10, 20, 25, 50, 100, 200, 500, 1000]
 hl_split: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
-runs_per_experiment: 1
+runs_per_experiment: 10
 
-# problem conf
+# problem conf, OBS! Should be changed when problem is changed
 n_objectives: 4
 n_variables: 7
 problem: "carsideimpact"
+nadir: [40.0, 5.0, 14.0, 30.0]
 
 # LEMOO conf
 fitness_fun: "PointMethodASF"
