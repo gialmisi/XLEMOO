@@ -6,22 +6,22 @@ runs_per_experiment: 1
 
 # problem conf, OBS! Should be changed when problem is changed
 ## carside impact problem
-n_objectives: 4
-n_variables: 7
-problem: "carsideimpact"
-nadir: [40.0, 5.0, 14.0, 30.0]
-ideal: [15.0, 3.0, 10.0, 0.0]
-ref_point: [20.0, 3.5, 11.0, 0.1]
-script_name: "carside_impact.py"
+# n_objectives: 4
+# n_variables: 7
+# problem: "carsideimpact"
+# nadir: [40.0, 5.0, 14.0, 30.0]
+# ideal: [15.0, 3.0, 10.0, 0.0]
+# ref_point: [20.0, 3.5, 11.0, 0.1]
+# script_name: "carside_impact.py"
 
 ## multiple clutch brakes problem
-# n_objectives: 5
-# n_variables: 5
-# problem: "multipleclutchbrakes"
-# nadir: [4.0, 22, 12.0, 120, 1100]
-# ideal: [-0.7, 2.9, 1.0, 70.0, 280]
-# ref_point: [1.2, 8.2, 3.5, 95.0, 320]
-# script_name: "multiple_clutch_brakes.py"
+n_objectives: 5
+n_variables: 5
+problem: "multipleclutchbrakes"
+nadir: [4.0, 22, 12.0, 120, 1100]
+ideal: [-0.7, 2.9, 1.0, 70.0, 280]
+ref_point: [1.2, 8.2, 3.5, 95.0, 320]
+script_name: "multiple_clutch_brakes.py"
 
 # LEMOO conf
 fitness_fun: "PointMethodASF"

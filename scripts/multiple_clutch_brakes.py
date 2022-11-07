@@ -16,10 +16,10 @@ from datetime import datetime
 n_objectives = snakemake.config["n_objectives"]
 n_variables = snakemake.config["n_variables"]
 
-nadir = np.array([4.0, 22, 12.0, 120, 1100])
-ideal = np.array([-0.7, 2.9, 1.0, 70.0, 280])
+nadir = np.array(snakemake.config["nadir"])
+ideal = np.array(snakemake.config["ideal"])
 
-ref_point = np.array([1.2, 8.2, 3.5, 95.0, 320])
+ref_point = np.array(snakemake.config["ref_point"])
 
 problem = multiple_clutch_brakes()
 problem_name = "multiple clutch brakes"
@@ -31,8 +31,8 @@ fitness_fun_name = "PointMethodASF"
 
 n_total_iterations = snakemake.config["total_iterations"]
 ml_every_n = int(snakemake.wildcards["ml_every"])
-n_ea_per_cycle = int(n_total_iterations / ml_every_n) - 1
-lemoo_total_iterations = ml_every_n
+n_ea_per_cycle = ml_every_n - 1
+lemoo_total_iterations = int(n_total_iterations / (n_ea_per_cycle + 1))
 
 use_darwin = snakemake.config["use_darwin"]
 use_ml = snakemake.config["use_ml"]
