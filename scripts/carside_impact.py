@@ -31,8 +31,8 @@ fitness_fun_name = "PointMethodASF"
 
 n_total_iterations = snakemake.config["total_iterations"]
 ml_every_n = int(snakemake.wildcards["ml_every"])
-n_ea_per_cycle = int(n_total_iterations / ml_every_n) - 1
-lemoo_total_iterations = ml_every_n
+n_ea_per_cycle = ml_every_n - 1
+lemoo_total_iterations = int(n_total_iterations / (n_ea_per_cycle + 1))
 
 use_darwin = snakemake.config["use_darwin"]
 use_ml = snakemake.config["use_ml"]
