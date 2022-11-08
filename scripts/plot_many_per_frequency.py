@@ -20,7 +20,7 @@ n_iters = 1001
 data_dir = "/home/kilo/workspace/XLEMOO/data/"
 frequencies = [2, 4, 5, 8, 10, 20, 25, 50, 100, 200, 500]
 data_files = [
-    data_dir + f"stats_mlevery_{freq}_hlsplit_50_carsideimpact.json"
+    data_dir + f"stats_mlevery_{freq}_hlsplit_5_carsideimpact.json"
     for freq in frequencies
 ]
 
@@ -40,7 +40,7 @@ for df, freq in zip(data_files, frequencies):
 for i, freq in enumerate(frequencies):
     plt.plot(
         range(n_iters),
-        data[f"{freq}"]["mean_best_fitness_per_iter"][:n_iters],
+        data[f"{freq}"]["mean_mean_fitness_per_iter"][:n_iters],
         c=colors[i],
         label=f"{freq}",
     )
