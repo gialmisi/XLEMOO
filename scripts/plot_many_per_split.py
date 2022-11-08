@@ -15,8 +15,8 @@ colors = [
     "#55001F",
     "#D9CEA3",
 ]
-n_iters = 2001
-data_dir = "/home/kilo/workspace/XLEMOO/data_bad/"
+n_iters = 1001
+data_dir = "/home/kilo/workspace/XLEMOO/data/"
 hl_splits = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
 data_files = [
     data_dir + f"stats_mlevery_100_hlsplit_{split}_carsideimpact.json"
@@ -39,7 +39,7 @@ for df, split in zip(data_files, hl_splits):
 for i, split in enumerate(hl_splits):
     plt.plot(
         range(n_iters),
-        data[f"{split}"]["mean_cumsum_per_iter"][:n_iters],
+        data[f"{split}"]["mean_mean_fitness_per_iter"][:n_iters],
         c=colors[i],
         label=f"{split}",
     )

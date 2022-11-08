@@ -1,8 +1,12 @@
+# general
+data_dir: "data"
+plot_out_dir: "figures"
+
 # experiment related
 total_iterations: 1000
 ml_every_n: [2, 4, 5, 8, 10, 20, 25, 50, 100, 200, 500]
 hl_split: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
-runs_per_experiment: 1
+runs_per_experiment: 10
 
 # problem conf, OBS! Should be changed when problem is changed
 ## carside impact problem
@@ -22,6 +26,15 @@ nadir: [4.0, 22, 12.0, 120, 1100]
 ideal: [-0.7, 2.9, 1.0, 70.0, 280]
 ref_point: [1.2, 8.2, 3.5, 95.0, 320]
 script_name: "multiple_clutch_brakes.py"
+
+## vehicle crash worthiness
+n_objectives: 3
+n_variables: 5
+problem: "vehiclecrashworthiness"
+nadir: [1700.0, 12.0, 0.2]
+ideal: [1600.0, 6.0, 0.038]
+ref_point: [1650.0, 7.0, 0.05]
+script_name: "vehicle_crash_worthiness.py"
 
 # LEMOO conf
 fitness_fun: "PointMethodASF"
@@ -53,3 +66,6 @@ ml_max_features: null
 ml_max_depth: null
 ml_bootstrap: true
 ml_bootstrap_features: true
+
+# plotting of heatmaps
+plot_for_each_iter: [5, 25, 50, 200, 1000]

@@ -1,6 +1,7 @@
 configfile: "experiments.yaml"
 script_name = config["script_name"]
 problem_name = config["problem"]
+plot_out_dir = config["plot_out_dir"]
 
 """"
 # EXPERIMENT 1
@@ -44,7 +45,7 @@ rule parameters_experiment:
     output:
         "data/run_{run_i}_mlevery_{ml_every}_hlsplit_{hlsplit}_{problem_name}.json" 
     script:
-        "scripts/multiple_clutch_brakes.py"
+        "scripts/vehicle_crash_worthiness.py"
 
 # EXPERIMENT, calcualte statistics from data
 rule all_statistics:
@@ -68,3 +69,24 @@ rule statistics:
         "data/stats_mlevery_{ml_every}_hlsplit_{hlsplit}_{problem_name}.json"
     script:
         "scripts/calculate_statistics.py"
+
+
+# PLOTTING, of heatmaps
+rule all_heatmaps:
+    input:
+        expand("{plot_out_dir}/heatmap_{for_iter}_{problem_name}.pdf",
+            plot_out_dir=plot_out_dir,
+            for_iter=config["plot_for_each_iter"],
+            problem_name=problem_name)
+
+rule heatmaps:
+    params:
+        plot_out_dir={"plot_out_dir"},
+        for_iter={"for_iter"},
+        problem_name={"problem_name"}
+    output:
+        "{plot_out_dir}/heatmap_{for_iter}_{problem_name}.pdf"
+    script:
+        "scripts/plot_freq_split_heat.py" 
+
+

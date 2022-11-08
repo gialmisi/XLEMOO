@@ -16,21 +16,23 @@ from datetime import datetime
 n_objectives = snakemake.config["n_objectives"]
 n_variables = snakemake.config["n_variables"]
 
-nadir = np.array([1700.0, 12.0, 0.2])
-ideal = np.array([1600.0, 6.0, 0.038])
+nadir = np.array(snakemake.config["nadir"])
+ideal = np.array(snakemake.config["ideal"])
 
-ref_point = np.array([1650.0, 7.0, 0.05])
+ref_point = np.array(snakemake.config["ref_point"])
 
 problem = vehicle_crashworthiness()
 problem_name = "vehicle crash worthiness"
 
-fitness_fun = asf_wrapper(PointMethodASF(nadir=nadir, ideal=ideal), {"reference_point": ref_point})
+fitness_fun = asf_wrapper(
+    PointMethodASF(nadir=nadir, ideal=ideal), {"reference_point": ref_point}
+)
 fitness_fun_name = "PointMethodASF"
 
 n_total_iterations = snakemake.config["total_iterations"]
 ml_every_n = int(snakemake.wildcards["ml_every"])
-n_ea_per_cycle = int(n_total_iterations / ml_every_n) - 1
-lemoo_total_iterations = ml_every_n
+n_ea_per_cycle = ml_every_n - 1
+lemoo_total_iterations = int(n_total_iterations / (n_ea_per_cycle + 1))
 
 use_darwin = snakemake.config["use_darwin"]
 use_ml = snakemake.config["use_ml"]
@@ -53,7 +55,9 @@ lem_params = LEMParams(
 
 pop_size = snakemake.config["pop_size"]
 cross_over_op = SBX_xover()
-mutation_op = BP_mutation(problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds())
+mutation_op = BP_mutation(
+    problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds()
+)
 selection_op = SelectNBest(None, pop_size)
 populatin_init_design = snakemake.config["population_init_design"]
 ea_iterations_per_cycle = n_ea_per_cycle

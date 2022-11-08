@@ -54,7 +54,7 @@ hyper_per_gen = np.array(
     [
         [
             hypervolume_indicator(all_objective_values[run_i, gen_i, :], nadir)
-            for gen_i in range(2001)
+            for gen_i in range(int(snakemake.config["total_iterations"]) + 1)
         ]
         for run_i in range(run_n)
     ]
