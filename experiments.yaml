@@ -68,4 +68,4 @@ ml_bootstrap: true
 ml_bootstrap_features: true
 
 # plotting of heatmaps
-plot_for_each_iter: [5, 7, 25, 31, 50, 200, 250, 1000]
+plot_for_each_iter: [10, 50, 200, 1000]
