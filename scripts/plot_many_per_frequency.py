@@ -20,7 +20,7 @@ n_iters = 1001
 data_dir = "/home/kilo/workspace/XLEMOO/data/"
 frequencies = [2, 4, 5, 8, 10, 20, 25, 50, 100, 200, 500]
 data_files = [
-    data_dir + f"stats_mlevery_{freq}_hlsplit_5_carsideimpact.json"
+    data_dir + f"stats_mlevery_{freq}_hlsplit_20_vehiclecrashworthiness.json"
     for freq in frequencies
 ]
 
@@ -36,14 +36,54 @@ for df, freq in zip(data_files, frequencies):
             data[f"{freq}"][key] = np.squeeze(json_dict[key])
 
 
+fig, axs = plt.subplots(2, 2)
+fig.set_size_inches(1.414 * 10, 10)
+
 # plot avg fitness
 for i, freq in enumerate(frequencies):
-    plt.plot(
+    axs[0, 0].set_title("Mean of best fitnesses")
+    axs[0, 0].set(ylabel="Fitness")
+    axs[0, 0].plot(
+        range(n_iters),
+        data[f"{freq}"]["mean_best_fitness_per_iter"][:n_iters],
+        c=colors[i],
+        label=f"{freq}",
+    )
+    axs[0, 1].set_title("Average of mean fitnesses")
+    axs[0, 1].set(ylabel="Fitness")
+    axs[0, 1].plot(
         range(n_iters),
         data[f"{freq}"]["mean_mean_fitness_per_iter"][:n_iters],
         c=colors[i],
         label=f"{freq}",
     )
+    axs[1, 0].set_title("Mean of hypervolumes")
+    axs[1, 0].set(ylabel="Hypervolume")
+    axs[1, 0].plot(
+        range(n_iters),
+        data[f"{freq}"]["mean_hyper_per_iter"][:n_iters],
+        c=colors[i],
+        label=f"{freq}",
+    )
+    axs[1, 1].set_title("Mean of cumulative sums")
+    axs[1, 1].set(ylabel="Sum of unique solutions")
+    axs[1, 1].plot(
+        range(n_iters),
+        data[f"{freq}"]["mean_cumsum_per_iter"][:n_iters],
+        c=colors[i],
+        label=f"{freq}",
+    )
 
-plt.legend()
-plt.show()
+for ax in axs.flat:
+    ax.set(xlabel="Iteration")
+
+plt.legend(
+    bbox_to_anchor=(1.48, 2.22),
+    fancybox=True,
+    shadow=True,
+    ncol=2,
+    title="Learning mode frequency",
+)
+fig.subplots_adjust(right=0.8)
+# plt.show()
+plt.savefig(f"/home/kilo/workspace/XLEMOO/figures/many_per_frequency_n_{n_iters}.pdf")
