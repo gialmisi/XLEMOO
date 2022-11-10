@@ -89,4 +89,20 @@ rule heatmaps:
     script:
         "scripts/plot_freq_split_heat.py" 
 
+rule all_heatmaps_per_iter:
+    input:
+        expand("{plot_out_dir}/heatmaps_{measure}_{problem_name}.pdf",
+            plot_out_dir=plot_out_dir,
+            measure=["best", "mean", "hyper", "sum"],
+            problem_name=problem_name)
+
+rule heatmaps_per_iter:
+    output:
+        "{plot_out_dir}/heatmaps_best_{problem_name}.pdf",
+        "{plot_out_dir}/heatmaps_mean_{problem_name}.pdf",
+        "{plot_out_dir}/heatmaps_hyper_{problem_name}.pdf",
+        "{plot_out_dir}/heatmaps_sum_{problem_name}.pdf"
+
+    script:
+        "scripts/plot_freq_split_heat_iters.py" 
 
