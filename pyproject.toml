@@ -6,13 +6,14 @@ authors = ["Giovanni Misitano <giovanni.a.misitano@jyu.fi>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8 <3.10"
-desdeo-emo = { path = "/home/kilo/workspace/desdeo-emo", develop = true }
+python = ">=3.9 <3.11"
+# desdeo-emo = { path = "/home/kilo/workspace/desdeo-emo", develop = true }
+desdeo-emo = ">=1.5.0"
 jupyterlab = "^3.3.2"
 matplotlib = "^3.5.1"
 scikit-learn = "^1.0.2"
 rulefit = "^0.3.1"
-imodels = "^1.2.5"
+imodels = "=1.3.5"
 pytest = "^7.1.1"
 desdeo-tools = "^1.6.1"
 desdeo-problem = "^1.4.6"
