@@ -12,6 +12,12 @@ Welcome to The XLEMOO framework's documentation!
 
    api
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Examples:
+
+   notebooks/Showcase
+
 
 
 Indices and tables
