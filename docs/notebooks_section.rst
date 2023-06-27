@@ -1,8 +1,10 @@
 .. _notebooks:
 
+Examples
+========
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Notebooks
 
    notebooks/Showcase

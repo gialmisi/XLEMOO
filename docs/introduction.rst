@@ -103,7 +103,7 @@ The XLEMOO framework should now be fully functional and the reader is welcome to
 Below are a couple of suggestions for next steps from here:
 
 - An usage example of the XLEMOO framework is given in :ref:`Notebooks<notebooks>`.
-- Ideas on how to modify the framework are given in :ref:`Hacking<hacking>`.
+- How to use and start modifying the framework is briefly discussed in :ref:`Basic usage<hacking>`.
 - Steps to reproduce the numerical experimetns in [Misitano2023a]_ are presented in :ref:`Reproducibility<repro>`.
 - The :ref:`API documentation<apidocs>` provides more documentation on the specific parts of the code found in the framework. 
 
@@ -111,6 +111,15 @@ Below are a couple of suggestions for next steps from here:
 
 Reproducibility
 ===============
+
+.. warning::
+
+    Because of the heuristic nature of the XLEMOO algorithms, the exact same results shown in the article
+    might be impossible to reproduce with 100% accuracy. However, results, expecially the statistical ones,
+    should be close to what was originally reported. The data ([Misitano2023b]_)
+    referred to at the end of this Section is
+    the original data used in [Misitano2023a]_ and will produce the same plots heatmap and line plots
+    show in [Misitano2023a]_.
 
 In this section, the steps required to reproduce the main experimental results in [Misitano2023a]_ (referred to as
 *the article* in this section) will be presented.
@@ -182,7 +191,9 @@ which will produce the heatmaps shown in the article.
 To produce the line plots in the article, the script ``plot_many_per_frequency.py`` can be run. In the script,
 at the top, make sure the ``data_dir`` and ``problem_name`` are correctly set.
 
-NOTEBOOK TO REPRODUCE THE HISTOGRAMS!
+For an example on how the histograms present in the article have been generated, see
+:doc:`this example notebook <notebooks/How_to_extract_rules_example>`.
+
 
 
 Archived experiment data
