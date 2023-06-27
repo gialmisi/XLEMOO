@@ -182,6 +182,8 @@ which will produce the heatmaps shown in the article.
 To produce the line plots in the article, the script ``plot_many_per_frequency.py`` can be run. In the script,
 at the top, make sure the ``data_dir`` and ``problem_name`` are correctly set.
 
+NOTEBOOK TO REPRODUCE THE HISTOGRAMS!
+
 
 Archived experiment data
 ------------------------
