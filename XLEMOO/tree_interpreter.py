@@ -6,30 +6,35 @@ from typing import TypedDict, List, Tuple
 
 
 class TreePath(TypedDict):
-    """A custom type describing a typed dictionary to store tree paths."""
+    """A custom type describing a typed dictionary to store tree paths.
+
+    Args:
+        rules (List): A list with each entry containing three elements:
+            1. feature index (int); 2. comparison operator (str), either 'gte' (greater or equal) or 'lt' (less than);
+            3. threshold value (float).
+        samples (int): The number of samples that reached the endpoint of the path.
+        impurity (float): Impurity of the last node of the path.
+        classification (int): The final classification predicted by the path.
+
+    """
 
     rules: List
-    samples: float
+    samples: int
     impurity: float
     classification: int
 
 
 def find_all_paths(tree: "sklearn.tree") -> List[TreePath]:
-    """Find and return all decision paths of a decision tree. Currently supports only decision trees in the style
-    present in the sklearn package.
+    """
+    Find and return all decision paths of a decision tree.
+    Currently supports only decision trees in the style present in the sklearn package.
 
     Args:
-        tree (sklearn.tree): a trained decision tree.
+        tree (sklearn.tree): A trained decision tree.
 
     Returns:
-        List[TreePath]: a list of all the paths of the decision tree. Contains the following entries:
-            rules: these are lists with three entries:
-                0: feature index
-                1: comparison operator, either 'gte' (greater or equal) or 'lt' (less than)
-                2: threshold value.
-            samples: the number of samples that reached the endpoint of a the path
-            impurity: impurity of last node of the path
-            classification: the final classification predicted by the path
+        List[TreePath]: A list of all the paths of the decision tree.
+
     """
     paths: List[TreePath] = []
 
@@ -41,6 +46,7 @@ def find_all_paths(tree: "sklearn.tree") -> List[TreePath]:
             tree (sklearn.tree): a trained decision tree.
             rules (list): the rules-entry of a TreePath.
             node_id (int): the node id of the currently traversed node.
+
         """
         # check if current node is a leaf, if true, do not recurse
         if tree.tree_.children_left[node_id] == tree.tree_.children_right[node_id]:
@@ -112,16 +118,15 @@ def instantiate_tree_rules(
 
     Returns:
         np.ndarray: a 3D numpy array. The first dimension is the number of paths
-            in paths that result in the desired classificaiton. The second
-            dimension if the number of desired samples. The third dimension are
-            the instantiated feature values. If no rule has been specified in a
-            path for some feature, that feature's value is set to be a random
-            value residing between its limits.
+        in paths that result in the desired classificaiton. The second
+        dimension if the number of desired samples. The third dimension are
+        the instantiated feature values. If no rule has been specified in a
+        path for some feature, that feature's value is set to be a random
+        value residing between its limits.
+
     """
     # find out how many of the paths have the desired classification
-    n_matching_paths = sum(
-        [1 if p["classification"] == desired_classification else 0 for p in paths]
-    )
+    n_matching_paths = sum([1 if p["classification"] == desired_classification else 0 for p in paths])
 
     if n_matching_paths == 0:
         # no paths found with desired classification, return empty array
@@ -130,9 +135,7 @@ def instantiate_tree_rules(
     # for each path, create an array with n_features and set each element according to the bounds
     limits = np.array(feature_limits)
     instantiated = np.atleast_3d(
-        np.random.uniform(
-            limits[:, 0], limits[:, 1], (n_matching_paths, n_samples, n_features)
-        )
+        np.random.uniform(limits[:, 0], limits[:, 1], (n_matching_paths, n_samples, n_features))
     )
 
     # for each path with the desired classification, start populating an array of NaN with attributes according to the rules
@@ -149,9 +152,7 @@ def instantiate_tree_rules(
                 instantiated[path_i, :, feature] = (
                     np.random.uniform(threshold, feature_limits[feature][1], n_samples)
                     if comp == "gt"
-                    else np.random.uniform(
-                        feature_limits[feature][0], threshold, n_samples
-                    )
+                    else np.random.uniform(feature_limits[feature][0], threshold, n_samples)
                 )
 
             path_i += 1

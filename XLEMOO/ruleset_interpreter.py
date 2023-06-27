@@ -97,9 +97,7 @@ def instantiate_rules(
 
         if not feature_i in op_value_per_index:
             # no rules for feature, instantaite between min and max
-            new_samples[:, feature_i] = np.random.uniform(
-                current_min, current_max, n_samples
-            )
+            new_samples[:, feature_i] = np.random.uniform(current_min, current_max, n_samples)
 
             continue
 
@@ -118,15 +116,11 @@ def instantiate_rules(
                 current_max = value
             else:
                 # unkown operator
-                print(
-                    f"When instantiating rule {rules} got unkown operator {op}. Skipping.."
-                )
+                print(f"When instantiating rule {rules} got unkown operator {op}. Skipping..")
                 pass
 
         # instantitate features in the samples according to rules
-        new_samples[:, feature_i] = np.random.uniform(
-            current_min, current_max, n_samples
-        )
+        new_samples[:, feature_i] = np.random.uniform(current_min, current_max, n_samples)
 
     return new_samples
 
@@ -163,9 +157,7 @@ def _instantiate_ruleset_rules(
     rules_pos_w = np.array(rules)[w_arr >= 0]
 
     for (rule_i, rule) in enumerate(rules_pos_w):
-        instantiated.append(
-            instantiate_rules(rule, n_features, feature_limits, int(n_per_rule[rule_i]))
-        )
+        instantiated.append(instantiate_rules(rule, n_features, feature_limits, int(n_per_rule[rule_i])))
 
     return instantiated
 
@@ -196,10 +188,8 @@ def instantiate_ruleset_rules(
 
     Returns:
         np.ndarray: A 2D array with all the new generated samples. If a list of samples per rule is desired,
-            see '_instantiate_ruleset_rules'.
+        see '_instantiate_ruleset_rules'.
     """
-    instantiated = _instantiate_ruleset_rules(
-        rules, weights, n_features, feature_limits, n_samples
-    )
+    instantiated = _instantiate_ruleset_rules(rules, weights, n_features, feature_limits, n_samples)
 
     return np.vstack(instantiated)
