@@ -1,5 +1,5 @@
 Introduction: what is XLEMOO?
-===============
+=============================
 
 .. note::
 
@@ -18,8 +18,7 @@ a *Darwininan mode* and a *learning mode*. These modes have been illustrated in 
     :alt: A figure depicting the Darwinian and learning modes.
     :align: center
 
-    Figure 1: A Darwinian and learning mode depicted. From [Misitano2023a
-]_.
+    Figure 1: A Darwinian and learning mode depicted. From [Misitano2023a]_.
 
 In utilizing interpretable machine learning models, we have the ability to build a rudimentary understanding
 on what kind of solutions in a population are *good* and what kind are less good. In practice, this means
@@ -100,8 +99,15 @@ If everything is working as expected, the tests should all pass with no errors (
 Next steps
 ----------
 
-- check notebooks
-- hacking the framework
+The XLEMOO framework should now be fully functional and the reader is welcome to utilize the framework however they like.
+Below are a couple of suggestions for next steps from here:
+
+- An usage example of the XLEMOO framework is given in :ref:`Notebooks<notebooks>`.
+- Ideas on how to modify the framework are given in :ref:`Hacking<hacking>`.
+- Steps to reproduce the numerical experimetns in [Misitano2023a]_ are presented in :ref:`Reproducibility<repro>`.
+- The :ref:`API documentation<apidocs>` provides more documentation on the specific parts of the code found in the framework. 
+
+.. _repro:
 
 Reproducibility
 ===============
@@ -184,9 +190,53 @@ The data used to produce the results in the article ([Misitano2023a]_) have also
 Zenodo ([Misitano2023b]_). This includes the
 raw numerical data and the statistical data.
 
+.. _hacking:
 
-Hacking the framework
-=====================
+Basic usage
+===========
+
+.. note::
+
+    Before proceeding, it
+    is highly suggested to first read [Misitano2023a]_ to gain a good undertsanding of the basic idea
+    of the algorithms implemented in the XLEMOO framework.
+
+The XLEMOO framework can be modified to many different extents.
+In this section, the basic functionality of the algorithm implemented in the framework is described.
+
+To get started, it is good to first
+understand the basic flow of the main algorithm implemented in the :class:`LEMOO <XLEMOO.LEMOO.LEMOO>` class,
+which is illustrated in :ref:`Figure 2<flow>`. The XLEMOO frameowrk makes use of the population
+class defined in the ``desdeo-emo`` module of the DESDEO framework [Misitano2021]_.
+The documentation of ``desdeo-emo`` is available `here <emo_>`_. 
+
+.. _flow:
+
+.. figure:: figures/flowchart.svg
+    :alt: A figure depicting the basic flow in the LEMOO class.
+    :align: center
+
+    Figure 2: The basic flow of the algorithm implemented in the LEMOO class. From [Misitano2023a]_.
+
+The :class:`LEMOO <XLEMOO.LEMOO.LEMOO>` class takes many paramters, which are documented in the
+:ref:`API documentation<apidocs>`. These are:
+
+- :class:`EAParams <XLEMOO.LEMOO.EAParams>`: Parameters related to the evolutionary algorithm used in the Darwininan mode.
+- :class:`MLParams <XLEMOO.LEMOO.MLParams>`: Parameters related to the machine learning model used in the learning mode.
+- :class:`LEMParams <XLEMOO.LEMOO.LEMParams>`: Generic parameters for the learnable evolurionary method.
+
+Currently, a simple indicator based evolurionary multiobjective optimization algorithm has been implemented in 
+the XLEMOO framwork. If one wishes to change the Darwinian or learning modes in the algorithm,
+the methods :class:`darwininan_mode <XLEMOO.LEMOO.LEMOO.darwininan_mode>` and 
+:class:`learning_mode <XLEMOO.LEMOO.LEMOO.learning_mode>` can be modified.
+
+To run the LEMOO method, either execute the method :class:`XLEMOO.LEMOO.LEMOO.run`, which will
+utilize treshold values to determine when to switch between modes, or
+:class:`XLEMOO.LEMOO.LEMOO.run_iterations`, which will run the LEMOO method for a set number of iterations
+in each mode.
+
+To get a solid grasp on how the framework works, it is recommended to check the basic usage example in the
+:ref:`Notebooks<notebooks>` section.
 
 Citation
 ========
@@ -205,9 +255,13 @@ References
     Misitano, G.. (2023). Exploring the Explainable Aspects and Performance of a Learnable Evolutionary Multiobjective Optimization Method. ACM Transactions on Evolutionary Learning and Optimization. To be published.
 
 .. [Misitano2023b]
-    Misitano, G.. (2023). XLEMOO numerical experiment data. doi: https://doi.org/10.5281/zenodo.8085637 
+    Misitano, G.. (2023). XLEMOO numerical experiment data. https://doi.org/10.5281/zenodo.8085637 
+
+.. [Misitano2021]
+    Misitano, G., Saini, B. S., Afsar, B., Shavazipour, B., & Miettinen, K. (2021). DESDEO: The Modular and Open Source Framework for Interactive Multiobjective Optimization. IEEE Access (Vol. 9, pp. 148277–148295). Institute of Electrical and Electronics Engineers (IEEE). https://doi.org/10.1109/access.2021.3123825 
 
 .. _git: https://git-scm.com/
 .. _Poetry: https://python-poetry.org/
 .. _pytest: https://docs.pytest.org/en/7.3.x/
 .. _snakemake: https://snakemake.readthedocs.io/en/stable/
+.. _emo: https://desdeo-emo.readthedocs.io/en/latest/

@@ -8,19 +8,19 @@ Welcome to The XLEMOO framework's documentation!
 
 .. toctree::
    :maxdepth: 1
-   :caption: The XLEMOO framework:
+   :caption: The XLEMOO framework
 
    introduction
 
 .. toctree::
    :maxdepth: 1
-   :caption: Examples:
+   :caption: Notebooks
 
-   notebooks/Showcase
+   notebooks_section
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: API documentation 
 
    api
 

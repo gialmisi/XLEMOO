@@ -6,6 +6,8 @@ from typing import TypedDict, List, Tuple
 
 
 class TreePath(TypedDict):
+    """A custom type describing a typed dictionary to store tree paths."""
+
     rules: List
     samples: float
     impurity: float

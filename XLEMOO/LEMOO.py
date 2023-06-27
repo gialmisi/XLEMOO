@@ -407,6 +407,7 @@ class LEMOO:
         return
 
     def learning_mode(self) -> None:
+        """Execute learning mode."""
         instantiation_factor = self._ml_params.instantation_factor
 
         if self._ml_params.generation_lookback <= 0:
@@ -607,6 +608,7 @@ class LEMOO:
             return False
 
     def run(self) -> Dict:
+        """Execute the LEMOO algorithm."""
         # counters:
         counters = {"darwin_mode": 0, "learning_mode": 0}
 
@@ -662,6 +664,7 @@ class LEMOO:
         return counters
 
     def run_iterations(self) -> Dict:
+        """Execute the LEMOO algorithms for a specific number of iterations."""
         # counters:
         counters = {"darwin_mode": 0, "learning_mode": 0}
 

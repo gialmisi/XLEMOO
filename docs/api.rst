@@ -1,3 +1,5 @@
+.. _apidocs:
+
 API documentation of the XLEMOO framework
 =========================================
 
@@ -6,3 +8,9 @@ API documentation of the XLEMOO framework
 
 .. autoclass:: XLEMOO.LEMOO.LEMOO
     :members: 
+
+.. automodule:: XLEMOO.ruleset_interpreter
+    :members:
+
+.. automodule:: XLEMOO.tree_interpreter
+    :members:
