@@ -1,6 +1,6 @@
 # The XLEMOO framework
 
-![Darwinian and Learning Modes](figures/modes.svg)
+![Darwinian and Learning Modes](docs/figures/modes.svg)
 
 ## Introduction
 
