@@ -1,39 +1,85 @@
 # The XLEMOO framework
 
-This framework is for experimenting and implementing explainable and learnable multiobjective optimization (**XLEMOO**) methods.
-
 ## Introduction
 
-Learnable evolutionary models are a special kind of model that combine both Darwinian inspired evolutionary
-algorithms and machine learning in what are called a _Darwinian mode_ and a _learning mode_, respectively.
-This idea can be utilized to implement evolutionary multiobejctive optimization methods as well, which is the
-main purpose of this framework. If interpretable machine learning is used, then explanations emerging
-from a learning mode may be leveraged to gian further insights about the multiobjective optimization problem
-and more.
+XLEMOO (Explainable Learnable Multiobjective Optimization) is a Python framework for evolutionary multiobjective optimization integrated with machine learning. The key concept is to blend Darwinian-inspired evolutionary algorithms with interpretable machine learning models to discover a population of near-Pareto optimal solutions for multiobjective optimization problems. The combination of evolutionary algorithms and machine learning leads to two modes: the Darwinian mode and the learning mode. The framework enables explainability by building an understanding of what characterizes good solutions in a population.
 
-We recommend reading the artcile TBA for further information on expainable and learnable evolutioanry
-multiobjective optimization.
+## Getting Started
 
-## Installation
+### Requirements
 
-We recommend installing the framework utilizing `poetry`. For information on how to install and use `poetry`, see
-[link](https://python-poetry.org/).
+- Python version 3.9 or 3.10
+- git
+- [Poetry](https://python-poetry.org/)
 
-We have also included a `requirements.txt` file for use with `pip`. However, the `requirements.txt` file might
-not always be up to date, as it is only updated when the documentation build system (Read the docs) requires it.
+### Installation
 
-XLEMOO has been run successfully on Python versoin 3.8.12. Other versions have not been tested, but newer versions at
-least should work.
+1. Clone the XLEMOO repository:
 
-## Getting started and documentation
+   ```shell
+   git clone https://github.com/gialmisi/XLEMOO
+   cd XLEMOO
+   ```
 
-We have provided notebooks for the user to get a quick glimpse on how the framework can be utilized. We have also provided an API documentaton with further details about the framework (link to be adde).
+2. Create and activate a new virtual environment with Poetry:
 
-## Testing
+   ```shell
+   poetry shell
+   ```
 
-Tests have been impelemented for most of the code present in the framework. We utilized `pytest`. To run all the tests at
-once, one can run `$ poetry`.
+3. Install the framework:
+
+   ```shell
+   poetry install
+   ```
+
+   To include development dependencies, use:
+
+   ```shell
+   poetry install --with dev
+   ```
+
+### Running Tests
+
+1. XLEMOO utilizes pytest for unit testing. Make sure development dependencies are installed:
+
+   ```shell
+   poetry install --with dev
+   ```
+
+2. Run the unit tests:
+
+   ```shell
+   pytest --reruns 5
+   ```
+
+## Documentation
+
+The main main documentation of the XLEMOO framework is hosted on readthedocs and can be found >HERE<.
+
+Alternatively, you can build the documentation manually. First, make sure the development dependencies are installed with poetry.
+Then, run the following command from the root directory of the project:
+
+```shell
+cd docs
+make html
+```
+
+This should build the documentation in a html format in the `docs/_build` directory. You can open the documentation with your favorite web browser by issuing the command (example with Firefox):
+
+```shell
+firefox _build/html/index.html
+```
+
+### Next Steps
+
+- For a usage example, refer to the Notebooks section in the main documentation.
+- To use and start modifying the framework, refer to the Basic Usage section in the main documentation.
+- To reproduce the numerical experiments, refer to the Reproducibility section in the main documentation.
+- The API documentation provides more information on the specific parts of the code in the framework.
 
 ## Citation
 
-To be added...
+If you utilize the XLEMOO framework in your research, please cite the following publication:
+
+Misitano, G. (2023). Exploring the Explainable Aspects and Performance of a Learnable Evolutionary Multiobjective Optimization Method. ACM Transactions on Evolutionary Learning and Optimization. To be published.
