@@ -14,7 +14,7 @@ def extract_slipper_rules(
 
     {("feature_name", "comparison_op"): "value"} where comparison_op can be "<", "<=", ">", or ">=".
 
-    The weigth represents the importance of each rule. The feature names are expected to be of the format
+    The weight represents the importance of each rule. The feature names are expected to be of the format
     "x_i" where 'i' is zero-indexed (first feature is 'x_0' etc.).
     """
     weights = classifier.estimator_weights_
@@ -48,7 +48,7 @@ def instantiate_rules(
     feature_limits: List[Tuple[float, float]],
     n_samples: int,
 ) -> np.ndarray:
-    """Takes Rules and instantiates them producing n_samples of new decison variable vectors corresponding
+    """Takes Rules and instantiates them producing n_samples of new decision variable vectors corresponding
     to the rules. If there are no rules for a variable, a random value is generated for that variable
     between its limits. Notice that when rules define a range for a variable, then that variable's
     value will be generated between those ranges randomly.
@@ -69,7 +69,7 @@ def instantiate_rules(
     # collect generated samples
     samples = []
 
-    # collect each rule in tupe of threes and put them in a list
+    # collect each rule in tuple of threes and put them in a list
     # cast the indices to int and limits to float
     index_op_value = list(
         map(
@@ -96,8 +96,10 @@ def instantiate_rules(
         current_max = feature_limits[feature_i][1]
 
         if not feature_i in op_value_per_index:
-            # no rules for feature, instantaite between min and max
-            new_samples[:, feature_i] = np.random.uniform(current_min, current_max, n_samples)
+            # no rules for feature, instantiate between min and max
+            new_samples[:, feature_i] = np.random.uniform(
+                current_min, current_max, n_samples
+            )
 
             continue
 
@@ -116,11 +118,15 @@ def instantiate_rules(
                 current_max = value
             else:
                 # unkown operator
-                print(f"When instantiating rule {rules} got unkown operator {op}. Skipping..")
+                print(
+                    f"When instantiating rule {rules} got unknown operator {op}. Skipping.."
+                )
                 pass
 
-        # instantitate features in the samples according to rules
-        new_samples[:, feature_i] = np.random.uniform(current_min, current_max, n_samples)
+        # instantiate features in the samples according to rules
+        new_samples[:, feature_i] = np.random.uniform(
+            current_min, current_max, n_samples
+        )
 
     return new_samples
 
@@ -157,7 +163,9 @@ def _instantiate_ruleset_rules(
     rules_pos_w = np.array(rules)[w_arr >= 0]
 
     for (rule_i, rule) in enumerate(rules_pos_w):
-        instantiated.append(instantiate_rules(rule, n_features, feature_limits, int(n_per_rule[rule_i])))
+        instantiated.append(
+            instantiate_rules(rule, n_features, feature_limits, int(n_per_rule[rule_i]))
+        )
 
     return instantiated
 
@@ -190,6 +198,8 @@ def instantiate_ruleset_rules(
         np.ndarray: A 2D array with all the new generated samples. If a list of samples per rule is desired,
         see '_instantiate_ruleset_rules'.
     """
-    instantiated = _instantiate_ruleset_rules(rules, weights, n_features, feature_limits, n_samples)
+    instantiated = _instantiate_ruleset_rules(
+        rules, weights, n_features, feature_limits, n_samples
+    )
 
     return np.vstack(instantiated)

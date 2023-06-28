@@ -29,7 +29,7 @@ def asf_wrapper(asf: ASFBase, asf_kwargs: dict) -> np.ndarray:
 def hypervolume_contribution(
     ref_point: np.ndarray,
 ) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
-    # Compute the contribution of each invididual in a population to the hypervolume
+    # Compute the contribution of each individual in a population to the hypervolume
     def fun(
         front: np.ndarray,
         variables: Optional[np.ndarray] = None,

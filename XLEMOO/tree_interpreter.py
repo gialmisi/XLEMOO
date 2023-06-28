@@ -118,7 +118,7 @@ def instantiate_tree_rules(
 
     Returns:
         np.ndarray: a 3D numpy array. The first dimension is the number of paths
-        in paths that result in the desired classificaiton. The second
+        in paths that result in the desired classification. The second
         dimension if the number of desired samples. The third dimension are
         the instantiated feature values. If no rule has been specified in a
         path for some feature, that feature's value is set to be a random
@@ -126,7 +126,9 @@ def instantiate_tree_rules(
 
     """
     # find out how many of the paths have the desired classification
-    n_matching_paths = sum([1 if p["classification"] == desired_classification else 0 for p in paths])
+    n_matching_paths = sum(
+        [1 if p["classification"] == desired_classification else 0 for p in paths]
+    )
 
     if n_matching_paths == 0:
         # no paths found with desired classification, return empty array
@@ -135,7 +137,9 @@ def instantiate_tree_rules(
     # for each path, create an array with n_features and set each element according to the bounds
     limits = np.array(feature_limits)
     instantiated = np.atleast_3d(
-        np.random.uniform(limits[:, 0], limits[:, 1], (n_matching_paths, n_samples, n_features))
+        np.random.uniform(
+            limits[:, 0], limits[:, 1], (n_matching_paths, n_samples, n_features)
+        )
     )
 
     # for each path with the desired classification, start populating an array of NaN with attributes according to the rules
@@ -152,7 +156,9 @@ def instantiate_tree_rules(
                 instantiated[path_i, :, feature] = (
                     np.random.uniform(threshold, feature_limits[feature][1], n_samples)
                     if comp == "gt"
-                    else np.random.uniform(feature_limits[feature][0], threshold, n_samples)
+                    else np.random.uniform(
+                        feature_limits[feature][0], threshold, n_samples
+                    )
                 )
 
             path_i += 1

@@ -74,7 +74,7 @@ class SelectionOP(ABC):
         Args:
             pop (Population): The population the selection operator is applied to.
             fitness (np.ndarray): The fitness of the individuals in the population.
-                It is assumed the fitnesses are related to the individuals inthe population by index.
+                It is assumed the fitnesses are related to the individuals in the population by index.
 
         Returns:
             List[int]: A list of indices indicating which individuals in the population have been selected.
@@ -104,10 +104,10 @@ class ElitismOP(ABC):
         Args:
             pop1 (Population): The first population.
             pop1_fitness (np.ndarray): The fitness values in the first population.
-                It is assumed the fitnesses are related to the individuals inthe population by index.
+                It is assumed the fitnesses are related to the individuals in the population by index.
             pop2 (Population): The second population.
             pop2_fitness (np.ndarray): The fitness values in the second population.
-                It is assumed the fitnesses are related to the individuals inthe population by index.
+                It is assumed the fitnesses are related to the individuals in the population by index.
 
         Returns:
             np.ndarray: The elite individuals from resulting by applying the elitism operator.
@@ -128,7 +128,7 @@ class MLModel(ABC):
 
         Args:
             X (np.ndarray): Training samples. E.g., n-dimensional vectors of real values floats.
-            Y (np.ndarray): The targets. E.g., a 1-dimensional vector of 0s and 1s for binary classificaiton.
+            Y (np.ndarray): The targets. E.g., a 1-dimensional vector of 0s and 1s for binary classification.
         """
         pass
 
@@ -170,7 +170,7 @@ class EAParams:
         cross_over_op (CrossOverOP): The crossover operator.
         mutation_op (MutationOP): The mutation operator.
         selection_op (SelectionOP): The selection operator.
-        population_init_design (str): Initialization strategy of the populatino. Should be 'Random' for random
+        population_init_design (str): Initialization strategy of the population. Should be 'Random' for random
             or 'LHSDesign' for latin hypercube sampling.
         iterations_per_cycle (int): How many times a population is evolved in a Darwinian mode before switching to a
             learning mode. Only relevant when a LEMOO method is run using the ``run_iterations`` method.
@@ -190,10 +190,10 @@ class MLParams:
 
     Args:
         H_split (float): The splitting ratio of 'high performing' population members. E.g., a H_split of 0.10 means
-            that 10% of the best performing population members are labeled as high perfomring during a learning mode.
+            that 10% of the best performing population members are labeled as high performing during a learning mode.
         L_split (float): Same as H_split, but for the 'low performing' population members.
         ml_model (MLModel): The machine learning model to be used in a learning mode.
-        instantation_factor (float): A multiplier used to determine how many new population members are instantiated
+        instantiation_factor (float): A multiplier used to determine how many new population members are instantiated
             in a learning mode after hypothesis forming. E.g., a factor of 2.0 means that 2.0*N_population new population
             members are instantiated based on the learned hypothesis, where N_population is the size of the population
             in the LEMOO method.
@@ -201,7 +201,7 @@ class MLParams:
             means that the 5 most recent population are considered when forming a hypothesis.
         ancestral_recall (int): This is like generation_lookback, but considers a specific number of the oldest
             populations. E.g., a recall of 5 will consider the five first populations.
-        unique_only (bool): Whether to consider unique population memebrs only when learning a hypothesis.
+        unique_only (bool): Whether to consider unique population members only when learning a hypothesis.
         iterations_per_cycle (int): How many times a population is ''evolved'' in a learning mode before switching to
             a Darwinian mode. A good default is 1. Only relevant when a LEMOO method is run using the ``run_iterations`` method.
     """
@@ -209,7 +209,7 @@ class MLParams:
     H_split: float
     L_split: float
     ml_model: MLModel
-    instantation_factor: float
+    instantiation_factor: float
     generation_lookback: int
     ancestral_recall: int
     unique_only: bool
@@ -223,12 +223,12 @@ class LEMParams:
     Args:
         use_ml (bool): Whether to engage in a learning mode or not.
         use_darwin (bool): Whether to engage in a Darwinian mode or not.
-        fitness_inicator (Callable[[np.ndarray, Optional[np.ndarray]], np.ndarray]): A fitness function that
+        fitness_indicator (Callable[[np.ndarray, Optional[np.ndarray]], np.ndarray]): A fitness function that
             accepts a 2d numpy array that represents the population members in the objective space of the problem.
             Optionally, the decision variable values may also be passed for each population member.
         ml_probe (int): The maximum time a learning mode is executed when a threshold is not reached.
             Only relevant when a LEMOO method is executed using the ``run`` method.
-        darwin_probe (int): like ``ml_probe`` but for a Darwininan mode.
+        darwin_probe (int): like ``ml_probe`` but for a Darwinian mode.
         ml_threshold (float): The relative improvement of the best population member's fitness expected before switching out
             of a learning mode. E.g., a threshold of 1.05 means that executing a learning mode stops when the best population
             member has improved by 5% when compared to the previous population's best member.
@@ -250,8 +250,8 @@ class LEMParams:
 
 @dataclass
 class PastGeneration:
-    """A helper data class representing past generation with the individuals (decison space) and their
-    corresponsing objective fitness values and fitness function values.
+    """A helper data class representing past generation with the individuals (decision space) and their
+    corresponding objective fitness values and fitness function values.
 
     Args:
         individuals (np.ndarray): The individuals of a population in the decision variable space.
@@ -286,11 +286,11 @@ class LEMOO:
                 See the dataclass' documentation for additional details.
 
         Attributes:
-            current_ml_model (MLModel): The current machine learing model employed in the learning mode.
-            _populatoin (Union[None, SurrogatePopulation]): The current population of solutions.
+            current_ml_model (MLModel): The current machine learning model employed in the learning mode.
+            _population (Union[None, SurrogatePopulation]): The current population of solutions.
             _best_fitness_fun_value (float): The current best fitness value found.
             _generation_history(List[PastGeneration]): A list to keep track fo the population histories during the
-                executiong of the LEMOO model.
+                executing of the LEMOO model.
 
         """
         self._problem: MOProblem = problem
@@ -358,7 +358,9 @@ class LEMOO:
             bool: True if the best fitness was updated, otherwise False.
 
         """
-        fitness_fun_values = self._lem_params.fitness_indicator(self._population.fitness, self._population.individuals)
+        fitness_fun_values = self._lem_params.fitness_indicator(
+            self._population.fitness, self._population.individuals
+        )
         min_value = np.min(fitness_fun_values)
 
         if min_value < self._best_fitness_fun_value:
@@ -387,7 +389,9 @@ class LEMOO:
         """
         if individuals is not None and objectives_fitnesses is not None:
             # add supplied individuals and fitnesses to history
-            fitness_fun_values = self._lem_params.fitness_indicator(objectives_fitnesses, individuals)
+            fitness_fun_values = self._lem_params.fitness_indicator(
+                objectives_fitnesses, individuals
+            )
             gen = PastGeneration(individuals, objectives_fitnesses, fitness_fun_values)
             self._generation_history.append(gen)
 
@@ -419,7 +423,9 @@ class LEMOO:
 
         return
 
-    def collect_n_past_generations(self, n: int, ancestral_recall: int = 0, unique_only=False):
+    def collect_n_past_generations(
+        self, n: int, ancestral_recall: int = 0, unique_only=False
+    ):
         """Collect the n past generations into a single numpy array for easier handling.
         Returns the collected individuals, objective fitness values, and fitness function values.
 
@@ -446,8 +452,12 @@ class LEMOO:
             past_slice = ancestral_slice + past_slice
 
         individuals = np.concatenate([gen.individuals for gen in past_slice])
-        objectives_fitnesses = np.concatenate([gen.objectives_fitnesses for gen in past_slice])
-        fitness_fun_values = np.concatenate([gen.fitness_fun_values for gen in past_slice])
+        objectives_fitnesses = np.concatenate(
+            [gen.objectives_fitnesses for gen in past_slice]
+        )
+        fitness_fun_values = np.concatenate(
+            [gen.fitness_fun_values for gen in past_slice]
+        )
 
         if unique_only:
             # return only unique individuals,
@@ -468,7 +478,9 @@ class LEMOO:
         offspring = self._population.mate()
         self._population.add(offspring, False)
 
-        fitness_fun_values = self._lem_params.fitness_indicator(self._population.fitness, self._population.individuals)
+        fitness_fun_values = self._lem_params.fitness_indicator(
+            self._population.fitness, self._population.individuals
+        )
         selected = self._ea_params.selection_op.do(self._population, fitness_fun_values)
 
         self._population.keep(selected)
@@ -477,7 +489,7 @@ class LEMOO:
 
     def learning_mode(self) -> None:
         """Execute learning mode."""
-        instantiation_factor = self._ml_params.instantation_factor
+        instantiation_factor = self._ml_params.instantiation_factor
 
         if self._ml_params.generation_lookback <= 0:
             lookback_n = len(self._generation_history)
@@ -494,10 +506,14 @@ class LEMOO:
             all_individuals,
             all_objectives_fitnesses,
             all_fitness_fun_values,
-        ) = self.collect_n_past_generations(lookback_n, unique_only=self._ml_params.unique_only)
+        ) = self.collect_n_past_generations(
+            lookback_n, unique_only=self._ml_params.unique_only
+        )
 
         if not isinstance(self._ml_params.ml_model, MLModel):
-            raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
         sorted_indices = np.argsort(np.squeeze(all_fitness_fun_values))
 
@@ -526,7 +542,9 @@ class LEMOO:
         # because the indices are now sorted, we can just pick the top best and bottom worst
         # and set them as the H and L groups
         h_indices = sorted_indices[0:h_split_id]
-        l_indices = sorted_indices[-l_split_id:][::-1]  # reversing might not really be needed here
+        l_indices = sorted_indices[-l_split_id:][
+            ::-1
+        ]  # reversing might not really be needed here
 
         # pick the individuals according to the calculated indices
         h_group = all_individuals[h_indices]
@@ -549,13 +567,17 @@ class LEMOO:
             or isinstance(self._ml_params.ml_model, SkopeRulesClassifier)
         ):
             # 1: target, 0: other
-            y_train = np.hstack((np.ones(len(h_group), dtype=int), np.zeros(len(l_group), dtype=int)))
+            y_train = np.hstack(
+                (np.ones(len(h_group), dtype=int), np.zeros(len(l_group), dtype=int))
+            )
         else:
-            raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
         n_to_instantiate = int(all_individuals.shape[0] * instantiation_factor)
 
-        # TODO: this is tree specific, check if tree or ruleset!
+        # TODO: this is tree specific, check if tree or rule set!
         #
         if isinstance(self._ml_params.ml_model, DecisionTreeClassifier):
             # do tree stuff
@@ -564,7 +586,7 @@ class LEMOO:
 
             # after training the model, it must be used to instantiate new individuals according to
             # the H-group description. I.e., find new individuals that have a classification of 1.
-            # by default, instantiate twice as many new individuals as peresent in the whole history.
+            # by default, instantiate twice as many new individuals as present in the whole history.
             # this factor is controlled by the instantiation_factor argument (default 2)
 
             paths = find_all_paths(classifier)
@@ -610,7 +632,9 @@ class LEMOO:
             )
 
         else:
-            raise TypeError(f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode.")
+            raise TypeError(
+                f"MLModel of type {type(self._ml_params.ml_model)} is not supported in learning mode."
+            )
 
         # mix with the existing H-group
         instantiated_and_h = np.vstack((h_group, instantiated))
@@ -619,7 +643,9 @@ class LEMOO:
         objective_fitnesses_new = self._problem.evaluate(instantiated_and_h).fitness
 
         # compute fitness fun values
-        fitness_fun_values_new = self._lem_params.fitness_indicator(objective_fitnesses_new, instantiated_and_h)
+        fitness_fun_values_new = self._lem_params.fitness_indicator(
+            objective_fitnesses_new, instantiated_and_h
+        )
 
         # sort the individuals according to their fitness value in ascending order
         sorted_indices_new = np.argsort(np.squeeze(fitness_fun_values_new))
@@ -659,7 +685,9 @@ class LEMOO:
         best_idx = np.argmin(past_fitness_fun_values)
 
         # check condition
-        if ((past_fitness_fun_values[best_idx] / self._best_fitness_fun_value)) < threshold:
+        if (
+            (past_fitness_fun_values[best_idx] / self._best_fitness_fun_value)
+        ) < threshold:
             self._best_fitness_fun_value = past_fitness_fun_values[best_idx][0]
 
             return True
@@ -670,7 +698,7 @@ class LEMOO:
 
     def run(self) -> Dict:
         """
-        Run the LEMOO model. Switching between the Darwinian mode and learning mode happends
+        Run the LEMOO model. Switching between the Darwinian mode and learning mode happens
         when the fitness of the best population member has improved past a threshold or when a maximum number of
         iterations has been executed in a mode.
 
@@ -699,7 +727,9 @@ class LEMOO:
                     learning_iters += 1
 
                     # check generations saved so far in learning more if they meet the termination criterion
-                    if self.check_condition_best(learning_iters, self._lem_params.ml_threshold):
+                    if self.check_condition_best(
+                        learning_iters, self._lem_params.ml_threshold
+                    ):
                         improved_in_learning = True
                         break
             else:
@@ -718,7 +748,9 @@ class LEMOO:
                     # iterate until condition is True
                     # check the generations saved so far in Darwin mode, that is
                     # why we keep the darwin_iters counter.
-                    if self.check_condition_best(darwin_iters, self._lem_params.darwin_threshold):
+                    if self.check_condition_best(
+                        darwin_iters, self._lem_params.darwin_threshold
+                    ):
                         improved_in_darwin = True
                         break
             else:
