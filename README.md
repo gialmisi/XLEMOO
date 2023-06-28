@@ -1,4 +1,5 @@
 # The XLEMOO framework
+[![Documentation Status](https://readthedocs.org/projects/xlemoo/badge/?version=latest)](https://xlemoo.readthedocs.io/en/latest/index.html)
 
 ![Darwinian and Learning Modes](docs/figures/modes.svg)
 
@@ -57,7 +58,7 @@ XLEMOO (Explainable Learnable Multiobjective Optimization) is a Python framework
 
 ## Documentation
 
-The main main documentation of the XLEMOO framework is hosted on readthedocs and can be found >HERE<.
+The main main documentation of the XLEMOO framework is hosted on readthedocs and can be found on [Read The Docs](https://xlemoo.readthedocs.io/en/latest/index.html).
 
 Alternatively, you can build the documentation manually. First, make sure the development dependencies are installed with poetry.
 Then, run the following command from the root directory of the project:
