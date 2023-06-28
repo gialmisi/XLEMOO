@@ -6,6 +6,10 @@
 Welcome to The XLEMOO framework's documentation!
 ================================================
 
+.. figure:: figures/modes.svg
+    :alt: A figure depicting the Darwinian and learning modes.
+    :align: center
+
 .. toctree::
    :maxdepth: 1
    :caption: The XLEMOO framework
