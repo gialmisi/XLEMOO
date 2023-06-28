@@ -189,19 +189,19 @@ class MLParams:
     """A data class to store and pass parameter values related to the learning mode of a LEMOO method.
 
     Args:
-        H_split (float): The splitting ratio of 'high performing' population members. E.g., a H_split of 0.10 means
-            that 10% of the best performing population members are labeled as high performing during a learning mode.
-        L_split (float): Same as H_split, but for the 'low performing' population members.
+        H_split (float): The splitting ratio of 'high performing' population individuals. E.g., a H_split of 0.10 means
+            that 10% of the best performing population individuals are labeled as high performing during a learning mode.
+        L_split (float): Same as H_split, but for the 'low performing' population individuals.
         ml_model (MLModel): The machine learning model to be used in a learning mode.
-        instantiation_factor (float): A multiplier used to determine how many new population members are instantiated
+        instantiation_factor (float): A multiplier used to determine how many new population individuals are instantiated
             in a learning mode after hypothesis forming. E.g., a factor of 2.0 means that 2.0*N_population new population
-            members are instantiated based on the learned hypothesis, where N_population is the size of the population
+            individuals are instantiated based on the learned hypothesis, where N_population is the size of the population
             in the LEMOO method.
         generation_lookback (int): How many older generations to consider in a learning mode. E.g., a lookback of 5
             means that the 5 most recent population are considered when forming a hypothesis.
         ancestral_recall (int): This is like generation_lookback, but considers a specific number of the oldest
             populations. E.g., a recall of 5 will consider the five first populations.
-        unique_only (bool): Whether to consider unique population members only when learning a hypothesis.
+        unique_only (bool): Whether to consider unique population individuals only when learning a hypothesis.
         iterations_per_cycle (int): How many times a population is ''evolved'' in a learning mode before switching to
             a Darwinian mode. A good default is 1. Only relevant when a LEMOO method is run using the ``run_iterations`` method.
     """
@@ -224,14 +224,14 @@ class LEMParams:
         use_ml (bool): Whether to engage in a learning mode or not.
         use_darwin (bool): Whether to engage in a Darwinian mode or not.
         fitness_indicator (Callable[[np.ndarray, Optional[np.ndarray]], np.ndarray]): A fitness function that
-            accepts a 2d numpy array that represents the population members in the objective space of the problem.
-            Optionally, the decision variable values may also be passed for each population member.
+            accepts a 2d numpy array that represents the population individuals in the objective space of the problem.
+            Optionally, the decision variable values may also be passed for each population individual.
         ml_probe (int): The maximum time a learning mode is executed when a threshold is not reached.
             Only relevant when a LEMOO method is executed using the ``run`` method.
         darwin_probe (int): like ``ml_probe`` but for a Darwinian mode.
-        ml_threshold (float): The relative improvement of the best population member's fitness expected before switching out
+        ml_threshold (float): The relative improvement of the best population individual's fitness expected before switching out
             of a learning mode. E.g., a threshold of 1.05 means that executing a learning mode stops when the best population
-            member has improved by 5% when compared to the previous population's best member.
+            individual has improved by 5% when compared to the previous population's best individual.
         darwin_threshold (float): Like ``ml_threshold`` but for a Darwinian mode.
         total_iterations (int): Overall maximum number of iterations to be run. Only relevant when the ``run_iterations``
             method of a LEMOO model is used.
@@ -379,9 +379,9 @@ class LEMOO:
         """Add a population to the history of the LEMOO model.
 
         Args:
-            individuals (Optional[np.ndarray], optional): The decision variables values of the population members. Defaults to None.
+            individuals (Optional[np.ndarray], optional): The decision variables values of the population individuals. Defaults to None.
             objectives_fitnesses (Optional[np.ndarray], optional): The corresponding objective function values of
-            the population members. Defaults to None.
+            the population individuals. Defaults to None.
 
         Note:
             If both arguments are ``None``, then the current population in the LEMOO model is added to the history.
@@ -415,7 +415,7 @@ class LEMOO:
         """Replace the current population of the LEMOO model with a new one.
 
         Args:
-            new_individuals (np.ndarray): The new population members in the decision variable space.
+            new_individuals (np.ndarray): The new population individuals in the decision variable space.
 
         """
         self._population.delete(np.arange(len(self._population.individuals)))
@@ -699,7 +699,7 @@ class LEMOO:
     def run(self) -> Dict:
         """
         Run the LEMOO model. Switching between the Darwinian mode and learning mode happens
-        when the fitness of the best population member has improved past a threshold or when a maximum number of
+        when the fitness of the best population individual has improved past a threshold or when a maximum number of
         iterations has been executed in a mode.
 
         Returns:
