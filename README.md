@@ -1,5 +1,7 @@
 # The XLEMOO framework
 
+![Darwinian and Learning Modes](figures/modes.svg)
+
 ## Introduction
 
 XLEMOO (Explainable Learnable Multiobjective Optimization) is a Python framework for evolutionary multiobjective optimization integrated with machine learning. The key concept is to blend Darwinian-inspired evolutionary algorithms with interpretable machine learning models to discover a population of near-Pareto optimal solutions for multiobjective optimization problems. The combination of evolutionary algorithms and machine learning leads to two modes: the Darwinian mode and the learning mode. The framework enables explainability by building an understanding of what characterizes good solutions in a population.
