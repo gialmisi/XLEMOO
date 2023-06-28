@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "XLEMOO"
-version = "0.1.0"
+version = "1.0.0"
 description = "Experiments related to the study of explainable learnable evolutionary multiobjective optimization."
 authors = ["Giovanni Misitano <giovanni.a.misitano@jyu.fi>"]
 license = "MIT"
