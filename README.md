@@ -1,5 +1,6 @@
 # The XLEMOO framework
 [![Documentation Status](https://readthedocs.org/projects/xlemoo/badge/?version=latest)](https://xlemoo.readthedocs.io/en/latest/index.html)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8090345.svg)](https://doi.org/10.5281/zenodo.8090345)
 
 ![Darwinian and Learning Modes](docs/figures/modes.svg)
 
