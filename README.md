@@ -76,10 +76,10 @@ firefox _build/html/index.html
 
 ### Next Steps
 
-- For a usage example, refer to the Notebooks section in the main documentation.
-- To use and start modifying the framework, refer to the Basic Usage section in the main documentation.
-- To reproduce the numerical experiments, refer to the Reproducibility section in the main documentation.
-- The API documentation provides more information on the specific parts of the code in the framework.
+- For a usage example, refer to the [Notebooks section in the main documentation](https://xlemoo.readthedocs.io/en/latest/notebooks_section.html#notebooks).
+- To use and start modifying the framework, refer to the [Basic Usage section in the main documentation](https://xlemoo.readthedocs.io/en/latest/introduction.html#hacking).
+- To reproduce the numerical experiments, refer to the [Reproducibility section in the main documentation](https://xlemoo.readthedocs.io/en/latest/introduction.html#repro).
+- The [API documentation](https://xlemoo.readthedocs.io/en/latest/api.html#apidocs) provides more information on the specific parts of the code in the framework.
 
 ## Citation
 
