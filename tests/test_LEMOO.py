@@ -27,7 +27,7 @@ def test_subclasses():
     assert issubclass(TournamentSelection, SelectionOP)
 
 
-def test_init():
+def init():
     problem = problem_builder("DTLZ2", 3, 2)
     xover_op = SBX_xover()
     mutation_op = BP_mutation(
@@ -46,7 +46,7 @@ def test_init():
 
 @pytest.fixture
 def toy_model():
-    return test_init()
+    return init()
 
 
 @pytest.mark.lemoo
