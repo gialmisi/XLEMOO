@@ -1,6 +1,6 @@
 import sys
 
-sys.path.append("../XLEMOO")
+sys.path.append(snakemake.config["path_to_xlemoo"])
 
 import numpy as np
 from desdeo_problem.testproblems import car_side_impact
@@ -59,7 +59,7 @@ mutation_op = BP_mutation(
     problem.get_variable_lower_bounds(), problem.get_variable_upper_bounds()
 )
 selection_op = SelectNBest(None, pop_size)
-populatin_init_design = snakemake.config["population_init_design"]
+population_init_design = snakemake.config["population_init_design"]
 ea_iterations_per_cycle = n_ea_per_cycle
 
 ea_params = EAParams(
@@ -67,7 +67,7 @@ ea_params = EAParams(
     cross_over_op=cross_over_op,
     mutation_op=mutation_op,
     selection_op=selection_op,
-    population_init_design=populatin_init_design,
+    population_init_design=population_init_design,
     iterations_per_cycle=ea_iterations_per_cycle,
 )
 
@@ -90,7 +90,7 @@ ml = SkopeRulesClassifier(
 
 h_split = int(snakemake.wildcards["hlsplit"]) / 100
 l_split = int(snakemake.wildcards["hlsplit"]) / 100
-instantation_factor = snakemake.config["instantation_factor"]
+instantiation_factor = snakemake.config["instantiation_factor"]
 generation_lookback = snakemake.config["generation_lookback"]
 ancestral_recall = snakemake.config["ancestral_recall"]
 unique_only = snakemake.config["unique_only"]
@@ -100,7 +100,7 @@ ml_params = MLParams(
     H_split=h_split,
     L_split=l_split,
     ml_model=ml,
-    instantation_factor=instantation_factor,
+    instantiation_factor=instantiation_factor,
     generation_lookback=generation_lookback,
     ancestral_recall=ancestral_recall,
     unique_only=unique_only,
@@ -143,7 +143,7 @@ parameters = {
         "cross_over_op": str(cross_over_op),
         "mutation_op": str(mutation_op),
         "selection_op": str(selection_op),
-        "populatin_init_design": populatin_init_design,
+        "population_init_design": population_init_design,
         "ea_iterations_per_cycle": ea_iterations_per_cycle,
     },
     "ml_model": {
@@ -158,7 +158,7 @@ parameters = {
     "ml_mode": {
         "h_split": h_split,
         "l_split": l_split,
-        "instantation_factor": instantation_factor,
+        "instantiation_factor": instantiation_factor,
         "generation_lookback": generation_lookback,
         "ancestral_recall": ancestral_recall,
         "unique_only": unique_only,

@@ -167,15 +167,59 @@ For the line plots in the article, the file ``plot_many_per_frequency.py`` in th
 This script relies on the statistics produced by the ``all_statistics`` rule defined in the Snakefile.
 
 The parameters used in the rules defined in the Snakefile are set in the ``experiments.yaml`` file at the root
-of the XLEMOO project. In the file, make sure under ``# problem conf`` the parameters related to the
-``vehicle crash worthiness`` problem are uncommented. The parameters for the other two problems should be commented
-(``multiple clutch brakes`` and ``carside impact problem``).
+of the XLEMOO project. This files needs to be modified to change the problem the experiments are run with.
+For example, to enable the ``vehicle crash worthiness`` problem, make sure the lines
+under ``## vehicle clash worthiness`` are uncommented, e.g.:
+
+.. code-block:: yaml
+
+    ## vehicle crash worthiness
+    n_objectives: 3
+    n_variables: 5
+    problem: "vehiclecrashworthiness"
+    nadir: [1700.0, 12.0, 0.2]
+    ideal: [1600.0, 6.0, 0.038]
+    ref_point: [1650.0, 7.0, 0.05]
+    script_name: "vehicle_crash_worthiness.py"
+
+And the lines related to the ``multiple clutch brakes`` and ``carside impact problem``
+under their respective section are commented out, e.g.:
+
+.. code-block:: yaml
+
+    ## carside impact problem
+    # n_objectives: 4
+    # n_variables: 7
+    # problem: "carsideimpact"
+    # nadir: [40.0, 5.0, 14.0, 30.0]
+    # ideal: [15.0, 3.0, 10.0, 0.0]
+    # ref_point: [20.0, 3.5, 11.0, 0.1]
+    # script_name: "carside_impact.py"
+
+    ## multiple clutch brakes problem
+    # n_objectives: 5
+    # n_variables: 5
+    # problem: "multipleclutchbrakes"
+    # nadir: [4.0, 22, 12.0, 120, 1100]
+    # ideal: [-0.7, 2.9, 1.0, 70.0, 280]
+    # ref_point: [1.2, 8.2, 3.5, 95.0, 320]
+    # script_name: "multiple_clutch_brakes.py"
+
+Likewise, to enable another problem,
+make sure only the lines related to that problem are uncommented while the lines 
+related to the other problems are commented. 
 
 To reproduce the raw numerical data and statistical data, run the following command:
 
 .. code-block:: shell
 
     $ snakemake --cores 4 all_statistics -k --retries 100
+
+.. note::
+
+    In case the XLEMOO library is not found when running snakemake, try modifying the ``path_to_xlemoo``
+    parameter in the ``experiments.yaml`` file to point to the root directory of the XLEMOO
+    library.
 
 The ``--cores`` parameter may be adjusted to match the number of available cores on your machine; the ``-k``
 parameter tells snakemake to continue executing the rules even if a previous rule fails; and the ``--retries 100``

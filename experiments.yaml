@@ -1,6 +1,7 @@
 # general
 data_dir: "data"
 plot_out_dir: "figures"
+path_to_xlemoo: "."
 
 # experiment related
 total_iterations: 1000
@@ -8,15 +9,16 @@ ml_every_n: [2, 4, 5, 8, 10, 20, 25, 50, 100, 200, 500]
 hl_split: [0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50]
 runs_per_experiment: 10
 
-# problem conf, OBS! Should be changed when problem is changed
+# problem configurations start. These must be modified to change the problem the experiments are run with
+
 ## carside impact problem
-n_objectives: 4
-n_variables: 7
-problem: "carsideimpact"
-nadir: [40.0, 5.0, 14.0, 30.0]
-ideal: [15.0, 3.0, 10.0, 0.0]
-ref_point: [20.0, 3.5, 11.0, 0.1]
-script_name: "carside_impact.py"
+# n_objectives: 4
+# n_variables: 7
+# problem: "carsideimpact"
+# nadir: [40.0, 5.0, 14.0, 30.0]
+# ideal: [15.0, 3.0, 10.0, 0.0]
+# ref_point: [20.0, 3.5, 11.0, 0.1]
+# script_name: "carside_impact.py"
 
 ## multiple clutch brakes problem
 # n_objectives: 5
@@ -28,13 +30,16 @@ script_name: "carside_impact.py"
 # script_name: "multiple_clutch_brakes.py"
 
 ## vehicle crash worthiness
-#n_objectives: 3
-# n_variables: 5
-#problem: "vehiclecrashworthiness"
-#nadir: [1700.0, 12.0, 0.2]
-#ideal: [1600.0, 6.0, 0.038]
-#ref_point: [1650.0, 7.0, 0.05]
-#script_name: "vehicle_crash_worthiness.py"
+n_objectives: 3
+n_variables: 5
+problem: "vehiclecrashworthiness"
+nadir: [1700.0, 12.0, 0.2]
+ideal: [1600.0, 6.0, 0.038]
+ref_point: [1650.0, 7.0, 0.05]
+script_name: "vehicle_crash_worthiness.py"
+
+# problem configurations end here, the parameters below are related to the evolutionary
+# and learning steps of the XLEMOO method.
 
 # LEMOO conf
 fitness_fun: "PointMethodASF"
@@ -52,7 +57,7 @@ population_init_design: "LHSDesign"
 # ML conf
 h_split: 0.2
 l_split: 0.2
-instantation_factor: 10
+instantiation_factor: 10
 generation_lookback: 0
 ancestral_recall: 0
 unique_only: true
