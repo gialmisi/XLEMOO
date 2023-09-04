@@ -238,10 +238,18 @@ the heatmaps may be generated utilizing the command:
     
     $ snakemake --cores 4 all_heatmaps
 
-which will produce the heatmaps shown in the article.
+which will produce the heatmaps shown in the article. The data and heatmaps will be generated in the directories
+defined by ``data_dir`` and ``plot_out_dir``, respectively, which are defined in ``experiments.yaml``.
 
 To produce the line plots in the article, the script ``plot_many_per_frequency.py`` can be run. In the script,
-at the top, make sure the ``data_dir`` and ``problem_name`` are correctly set.
+at the top, make sure the ``data_dir`` points to the directory with the results of running
+the snakemake rule ``all_statistics``, which is defined by ``data_dir`` in ``experiments.yaml``.
+To choose for which problem the plots are generated, change ``problem_name`` to match
+either ``vehiclecrashworthiness``, ``carsideimpact``, or ``multipleclutchbrakes``. To control whether
+the 200 or 1000 iteration plots are generated, change ``n_iters`` according. The output directory
+of the script is defined by the parameter ``n_iters``.
+
+and ``problem_name`` are correctly set.
 
 For an example on how the histograms present in the article have been generated, see
 :doc:`this example notebook <notebooks/How_to_extract_rules_example>`.

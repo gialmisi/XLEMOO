@@ -2,6 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 
+n_iters = 200
+data_dir = "./data"
+problem_name = "vehiclecrashworthiness"
+output_dir = "./figures"
+
 colors = [
     "#D81B60",
     "#1E88E5",
@@ -16,12 +21,10 @@ colors = [
     "#D9CEA3",
     "#3FD17E",
 ]
-n_iters = 200
-data_dir = "/home/kilo/workspace/XLEMOO/data/"
-problem_name = "vehiclecrashworthiness"
+
 frequencies = [2, 4, 5, 8, 10, 20, 25, 50, 100, 200, 500]
 data_files = [
-    data_dir + f"stats_mlevery_{freq}_hlsplit_20_{problem_name}.json"
+    f"{data_dir}/stats_mlevery_{freq}_hlsplit_20_{problem_name}.json"
     for freq in frequencies
 ]
 
@@ -88,5 +91,5 @@ plt.legend(
 fig.subplots_adjust(right=0.8)
 # plt.show()
 plt.savefig(
-    f"/home/kilo/workspace/XLEMOO/figures/many_per_frequency_n_{n_iters}_{problem_name}.pdf"
+    f"{output_dir}/many_per_frequency_n_{n_iters}_{problem_name}.pdf"
 )
