@@ -18,7 +18,13 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../'))
 
-extensions = ['sphinx.ext.napoleon', 'sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'nbsphinx']
+extensions = ['sphinx.ext.napoleon', 'sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'nbsphinx', 'sphinx.ext.intersphinx']
+
+intersphinx_mapping = {
+    'desdeo-problem': ('https://desdeo-problem.readthedocs.io/en/latest', None),
+    'desdeo-emo': ('https://desdeo-emo.readthedocs.io/en/latest/', None),
+    'desdeo-tools': ('https://desdeo-tools.readthedocs.io/en/latest/', None),
+}
 
 nbsphinx_kernel_name = "python3"
 nbsphinx_execute = 'never'

@@ -266,6 +266,26 @@ class PastGeneration:
 
 
 class LEMOO:
+    """A class to define LEMOO models.
+
+    Args:
+        problem (MOProblem): The multiobjective optimization problem to be solved as defined in the DESDEO
+            framework.
+        lem_params (LEMParams): A dataclass with parameters relevant to the LEM part of the LEMOO method.
+            See the dataclass' documentation for additional details.
+        ea_params (EAParams): A dataclass with parameters relevant to the Darwin mode of the LEMOO method.
+            See the dataclass' documentation for additional details.
+        ml_params (MLParams): A dataclass with parameters relevant to the learning mode of the LEMOO method.
+            See the dataclass' documentation for additional details.
+
+    Attributes:
+        current_ml_model (MLModel): The current machine learning model employed in the learning mode.
+        _population (Union[None, SurrogatePopulation]): The current population of solutions.
+        _best_fitness_fun_value (float): The current best fitness value found.
+        _generation_history(List[PastGeneration]): A list to keep track fo the population histories during the
+            executing of the LEMOO model.
+
+    """
     def __init__(
         self,
         problem: MOProblem,
@@ -273,26 +293,6 @@ class LEMOO:
         ea_params: EAParams,
         ml_params: MLParams,
     ):
-        """A class to define LEMOO models.
-
-        Args:
-            problem (MOProblem): The multiobjective optimization problem to be solved as defined in the DESDEO
-                framework.
-            lem_params (LEMParams): A dataclass with parameters relevant to the LEM part of the LEMOO method.
-                See the dataclass' documentation for additional details.
-            ea_params (EAParams): A dataclass with parameters relevant to the Darwin mode of the LEMOO method.
-                See the dataclass' documentation for additional details.
-            ml_params (MLParams): A dataclass with parameters relevant to the learning mode of the LEMOO method.
-                See the dataclass' documentation for additional details.
-
-        Attributes:
-            current_ml_model (MLModel): The current machine learning model employed in the learning mode.
-            _population (Union[None, SurrogatePopulation]): The current population of solutions.
-            _best_fitness_fun_value (float): The current best fitness value found.
-            _generation_history(List[PastGeneration]): A list to keep track fo the population histories during the
-                executing of the LEMOO model.
-
-        """
         self._problem: MOProblem = problem
         self._lem_params: LEMParams = lem_params
         self._ea_params: EAParams = ea_params

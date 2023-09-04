@@ -3,14 +3,11 @@
 API documentation of the XLEMOO framework
 =========================================
 
-.. automodule:: XLEMOO.LEMOO
-    :members:
+Contents:
 
-.. autoclass:: XLEMOO.LEMOO.LEMOO
-    :members: 
+.. toctree::
+   :maxdepth: 2
 
-.. automodule:: XLEMOO.ruleset_interpreter
-    :members:
-
-.. automodule:: XLEMOO.tree_interpreter
-    :members:
+   xlemoo_lemoo
+   ruleset_interpreter
+   tree_interpreter
