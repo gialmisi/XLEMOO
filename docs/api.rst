@@ -12,4 +12,6 @@ Contents:
    ruleset_interpreter
    tree_interpreter
    fitness_indicators
+   selection
    utilities
+   plotting

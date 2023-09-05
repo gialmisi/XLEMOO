@@ -7,6 +7,12 @@ from imodels.util.rule import Rule
 
 
 def plot_best_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
+    """Plots the best fitness value for each generation.
+
+    Args:
+        generations (List[PastGeneration]): A list of past generations.
+        ylog (bool, optional): Should the y-scale be logarithmic? Defaults to False.
+    """
     best_values = np.array([np.min(gen.fitness_fun_values) for gen in generations])
     if ylog:
         plt.yscale("symlog")
@@ -16,6 +22,12 @@ def plot_best_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
 
 
 def plot_mean_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
+    """Plots the mean fitness value of each generation.
+
+    Args:
+        generations (List[PastGeneration]): A list of past generations.
+        ylog (bool, optional): Should the y-scale be logarithmic? Defaults to False.
+    """
     mean_values = np.array([np.mean(gen.fitness_fun_values) for gen in generations])
     if ylog:
         plt.yscale("symlog")
@@ -25,6 +37,11 @@ def plot_mean_fitnesses(generations: List[PastGeneration], ylog=False) -> None:
 
 
 def plot_std_fitnesses(generations: List[PastGeneration]) -> None:
+    """Plots the standard deviation of the fitness value of each generation.
+
+    Args:
+        generations (List[PastGeneration]): A list of past generations.
+    """
     std_values = np.array([np.std(gen.fitness_fun_values) for gen in generations])
     plt.plot(np.arange(std_values.shape[0]), std_values)
 
@@ -32,6 +49,12 @@ def plot_std_fitnesses(generations: List[PastGeneration]) -> None:
 
 
 def plot_hypervolume(generations: List[PastGeneration], ref_point: np.ndarray) -> None:
+    """Plots the hypervolume of each generation.
+
+    Args:
+        generations (List[PastGeneration]): A list of past generations.
+        ref_point (np.ndarray): A reference point utilized in computing the hypervolume.
+    """
     hwas = np.array(
         [
             hypervolume_indicator(gen.objectives_fitnesses, ref_point)
@@ -41,9 +64,3 @@ def plot_hypervolume(generations: List[PastGeneration], ref_point: np.ndarray) -
     plt.plot(np.arange(hwas.shape[0]), hwas)
 
     return
-
-
-def show_rules(rules: List[Rule]) -> None:
-    print("Rule -> Accuracy:")
-    for rule in rules:
-        print(f"{rule} --> {rule.args[0]}")
