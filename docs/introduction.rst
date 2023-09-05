@@ -105,17 +105,6 @@ To run the unit tests, run:
 
 If everything is working as expected, the tests should all pass with no errors (some warnings are expected).
 
-Next steps
-----------
-
-The XLEMOO framework should now be fully functional and the reader is welcome to utilize the framework however they like.
-Below are a couple of suggestions for next steps from here:
-
-- An usage example of the XLEMOO framework is given in :ref:`Notebooks<notebooks>`.
-- How to use and start modifying the framework is briefly discussed in :ref:`Basic usage<hacking>`.
-- Steps to reproduce the numerical experiments in [Misitano2023a]_ are presented in :ref:`Reproducibility<repro>`.
-- The :ref:`API documentation<apidocs>` provides more documentation on the specific parts of the code found in the framework. 
-
 .. _hacking:
 
 Basic usage
@@ -171,6 +160,17 @@ To get a solid grasp on how the framework works, it is recommended to check the 
 XLMEOO method can be used as an interactive multiobjective optimization method.
 
 .. _repro:
+
+Next steps
+----------
+
+The XLEMOO framework should now be fully functional and the reader is welcome to utilize the framework however they like.
+Below are a couple of suggestions for next steps from here:
+
+- An usage example of the XLEMOO framework is given in :ref:`Notebooks<notebooks>`.
+- How to use and start modifying the framework is briefly discussed in :ref:`Basic usage<hacking>`.
+- Steps to reproduce the numerical experiments in [Misitano2023a]_ are presented in :ref:`Reproducibility<repro>`.
+- The :ref:`API documentation<apidocs>` provides more documentation on the specific parts of the code found in the framework. 
 
 Reproducibility
 ===============
