@@ -303,11 +303,8 @@ either ``vehiclecrashworthiness``, ``carsideimpact``, or ``multipleclutchbrakes`
 the 200 or 1000 iteration plots are generated, change ``n_iters`` according. The output directory
 of the script is defined by the parameter ``output_dir``.
 
-and ``problem_name`` are correctly set.
-
 For an example on how the histograms present in the article have been generated, see
 :doc:`this example notebook <notebooks/How_to_extract_rules_example>`.
-
 
 
 Archived experiment data

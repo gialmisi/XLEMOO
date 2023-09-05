@@ -8,18 +8,38 @@ from typing import Callable, Optional
 def naive_sum(
     objectives_fitnesses: np.ndarray, variables: Optional[np.ndarray] = None
 ) -> np.ndarray:
+    """An indicator that computes the sum of the objective function values in each objective vector provided.
+
+    Args:
+        objectives_fitnesses (np.ndarray): A 2D vector with each row, and objective vector, representing the objective values of
+            an objective function. Minimization assumed for each objective.
+        variables (Optional[np.ndarray], optional): A 2D array of the decision variable value
+            corresponding to the objective vectors in ``objective_fitness``. Not used. Defaults to None.
+
+    Returns:
+        np.ndarray: A 2D array with singleton entries, where each entry is the sum of the
+        objective function value in each objective vector. The lower the value of the sum, the
+        better the fitness.
+    """
     return np.atleast_2d(np.sum(objectives_fitnesses, axis=1)).T
 
 
-def must_sum_to_one(
-    objectives_fitnesses: np.ndarray, variables: Optional[np.ndarray] = None
-) -> np.ndarray:
-    sums = np.sum(objectives_fitnesses**2, axis=1)
-    return np.atleast_2d(abs(sums - 1)).T
+def asf_wrapper(asf: ASFBase, asf_kwargs: dict) -> Callable[[np.ndarray, [Optional[np.ndarray]]], np.ndarray]:
+    """Wraps a scalarization function into a callable function that accepts a 2D array of objective
+    function values and a 2D array of decision variable values. This callable can then be used as an
+    indicator. The lower the scalarized value is, the better.
 
+    Args:
+        asf (ASFBase): A scalarization function.
+        asf_kwargs (dict): The keyword arguments passed to the scalarization function when it is evaluated.
 
-def asf_wrapper(asf: ASFBase, asf_kwargs: dict) -> np.ndarray:
-    def fun(objectives_fitnesses: np.ndarray, variables: Optional[np.ndarray] = None):
+    Returns:
+        Callable[[np.ndarray, [Optional[np.ndarray]]], np.ndarray]: A function that accepts a 2D array of objective
+        vectors, and optionally a 2D array of the corresponding decision variable vectors, and computes the scalarized 
+        values of the objective vectors returning them in a 2D array of singleton values where each value is the
+        result of the scalarization.
+    """
+    def fun(objectives_fitnesses: np.ndarray, variables: Optional[np.ndarray] = None) -> np.ndarray:
         asf_values = asf(objectives_fitnesses, **asf_kwargs)
         return np.atleast_2d(asf_values).T
 
@@ -29,6 +49,21 @@ def asf_wrapper(asf: ASFBase, asf_kwargs: dict) -> np.ndarray:
 def hypervolume_contribution(
     ref_point: np.ndarray,
 ) -> Callable[[np.ndarray, np.ndarray], np.ndarray]:
+    """Creates a function based on the hypervolume. This function accepts a 2D array
+    of objective vectors, and optionally a 2D array of decision variable vectors as well.
+    This function when computes the individual contribution of each objective vector
+    to the cumulative hypervolume of all the vectors. This function may then be used
+    as an indicator. The decision variable values are not currently used.
+
+    Args:
+        ref_point (np.ndarray): The reference point used to compute the hypervolume.
+
+    Returns:
+        Callable[[np.ndarray, np.ndarray], np.ndarray]: A hypervolume indicator
+        function that computes the contribution of each provided objective vector
+        to the cumulative hypervolume of all the vectors. The lower the value,
+        the better.
+    """
     # Compute the contribution of each individual in a population to the hypervolume
     def fun(
         front: np.ndarray,
@@ -65,6 +100,29 @@ def inside_ranges(
     sim_cost: float,
     asf_fun: Callable[[np.ndarray], np.ndarray] = None,
 ) -> Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]:
+    """Creates a function that computes a fitness value for objective vectors based on whether the values
+    conform to given bounds. As an optional second argument, this function accepts a 2D array
+    of decision variable vectors. Additionally, a similarity penalty can also be included where an objective vector
+    is penalized if it is similar to another, and a scalarization contribution may also be added.
+    The decision variable vectors are not used currently.
+
+    Args:
+        lower_limits (np.ndarray): An array with the lower bounds of the objective function values.
+        upper_limits (np.ndarray): An array with the upper bounds of the objective function values.
+        sim_cost (float): The similarity penalty.
+        asf_fun (Callable[[np.ndarray], np.ndarray], optional): A wrapped scalarization function that
+            is used to compute the scalarization contribution for each objective vector.
+            See :func:`asf_wrapper`. Defaults to None.
+
+    Raises:
+        ValueError: The shape of the ``lower_limits`` and ``upper_limits`` mismatch.
+
+    Returns:
+        Callable[[np.ndarray, np.ndarray, np.ndarray], np.ndarray]: A function that
+        computes the fitness values of objective vectors based on whether the values
+        are withing defined lower and upper bounds penalized by a similarity cost.
+        Additional contributions may be calculated with a scalarization function.
+    """
     if lower_limits.shape != upper_limits.shape:
         raise ValueError(f"The shapes of lower_limits and upper_limits must match!")
 

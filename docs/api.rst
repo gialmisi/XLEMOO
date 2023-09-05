@@ -1,7 +1,7 @@
 .. _apidocs:
 
-API documentation of the XLEMOO framework
-=========================================
+Index
+=====
 
 Contents:
 
@@ -11,4 +11,5 @@ Contents:
    xlemoo_lemoo
    ruleset_interpreter
    tree_interpreter
+   fitness_indicators
    utilities

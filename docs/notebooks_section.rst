@@ -12,6 +12,11 @@ functions are in turn utilized from the ``desdeo-tools`` package, which are docu
 Some evolutionary operators are utilized from the ``desdeo-emo`` package, which are in turn
 documented `here <https://desdeo-emo.readthedocs.io/en/latest/autoapi/desdeo_emo/recombination/index.html>`_.
 
+The DESDEO framework provides many more multiobjective optimization problems, scalarization functions, and
+evolutionary operators that may be
+utilized with the XLEMOO framework. The problems, functions, and operators considered in these examples
+are explained in more detail in the XLMEOO article.
+
 .. toctree::
    :maxdepth: 2
    :caption: Notebooks
