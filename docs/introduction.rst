@@ -116,6 +116,60 @@ Below are a couple of suggestions for next steps from here:
 - Steps to reproduce the numerical experiments in [Misitano2023a]_ are presented in :ref:`Reproducibility<repro>`.
 - The :ref:`API documentation<apidocs>` provides more documentation on the specific parts of the code found in the framework. 
 
+.. _hacking:
+
+Basic usage
+===========
+
+.. note::
+
+    Before proceeding, it
+    is highly suggested to first read [Misitano2023a]_ to gain a good understanding of the basic idea
+    of the algorithms implemented in the XLEMOO framework.
+
+The XLEMOO framework can be modified to many different extents.
+In this section, the basic functionality of the algorithm implemented in the framework is described.
+
+To get started, it is good to first
+understand the basic flow of the main algorithm implemented in the :class:`LEMOO <XLEMOO.LEMOO.LEMOO>` class,
+which is illustrated in :ref:`Figure 2<flow>`. The XLEMOO framework makes use of the population
+class defined in the ``desdeo-emo`` module of the DESDEO framework [Misitano2021]_.
+The documentation of ``desdeo-emo`` is available `here <emo_>`_. 
+
+.. _flow:
+
+.. figure:: figures/flowchart.svg
+    :alt: A figure depicting the basic flow in the LEMOO class.
+    :align: center
+
+    Figure 2: The basic flow of the algorithm implemented in the LEMOO class.
+    :math:`N^D` represents how many times a Darwinian mode is executed during a single iteration;
+    :math:`N^L` represents how many times a learning mode is executed during a single iteration; and
+    :math:`N^T` is the total number of iterations to be executed.
+    From [Misitano2023a]_.
+
+
+The :class:`LEMOO <XLEMOO.LEMOO.LEMOO>` class takes many parameters, which are documented in the
+:ref:`API documentation<apidocs>`. These are:
+
+- :class:`EAParams <XLEMOO.LEMOO.EAParams>`: Parameters related to the evolutionary algorithm used in a Darwinian mode.
+- :class:`MLParams <XLEMOO.LEMOO.MLParams>`: Parameters related to the machine learning model used in a learning mode.
+- :class:`LEMParams <XLEMOO.LEMOO.LEMParams>`: Generic parameters for the learnable evolutionary method.
+
+Currently, a simple indicator based evolutionary multiobjective optimization algorithm has been implemented in 
+the XLEMOO framework. If one wishes to change the Darwinian or learning modes in the algorithm,
+the methods :class:`darwinian_mode <XLEMOO.LEMOO.LEMOO.darwinian_mode>` and 
+:class:`learning_mode <XLEMOO.LEMOO.LEMOO.learning_mode>` can be modified or overridden.
+
+To run the LEMOO method, either execute the :class:`run <XLEMOO.LEMOO.LEMOO.run>` method, which will
+utilize threshold values to determine when to switch between modes, or
+the :class:`run_iterations <XLEMOO.LEMOO.LEMOO.run_iterations>` method, which will run the LEMOO method for a set number of iterations
+in each mode.
+
+To get a solid grasp on how the framework works, it is recommended to check the basic usage example in the
+:ref:`Notebooks<notebooks>` section. :doc:`Especially this notebook <notebooks/Showcase>` given an example how an
+XLMEOO method can be used as an interactive multiobjective optimization method.
+
 .. _repro:
 
 Reproducibility
@@ -247,7 +301,7 @@ the snakemake rule ``all_statistics``, which is defined by ``data_dir`` in ``exp
 To choose for which problem the plots are generated, change ``problem_name`` to match
 either ``vehiclecrashworthiness``, ``carsideimpact``, or ``multipleclutchbrakes``. To control whether
 the 200 or 1000 iteration plots are generated, change ``n_iters`` according. The output directory
-of the script is defined by the parameter ``n_iters``.
+of the script is defined by the parameter ``output_dir``.
 
 and ``problem_name`` are correctly set.
 
@@ -262,60 +316,6 @@ Archived experiment data
 The data used to produce the results in the article [Misitano2023a]_ have also been stored on
 Zenodo [Misitano2023b]_. This includes the
 raw numerical data and the statistical data.
-
-.. _hacking:
-
-Basic usage
-===========
-
-.. note::
-
-    Before proceeding, it
-    is highly suggested to first read [Misitano2023a]_ to gain a good understanding of the basic idea
-    of the algorithms implemented in the XLEMOO framework.
-
-The XLEMOO framework can be modified to many different extents.
-In this section, the basic functionality of the algorithm implemented in the framework is described.
-
-To get started, it is good to first
-understand the basic flow of the main algorithm implemented in the :class:`LEMOO <XLEMOO.LEMOO.LEMOO>` class,
-which is illustrated in :ref:`Figure 2<flow>`. The XLEMOO framework makes use of the population
-class defined in the ``desdeo-emo`` module of the DESDEO framework [Misitano2021]_.
-The documentation of ``desdeo-emo`` is available `here <emo_>`_. 
-
-.. _flow:
-
-.. figure:: figures/flowchart.svg
-    :alt: A figure depicting the basic flow in the LEMOO class.
-    :align: center
-
-    Figure 2: The basic flow of the algorithm implemented in the LEMOO class.
-    :math:`N^D` represents how many times a Darwinian mode is executed during a single iteration;
-    :math:`N^L` represents how many times a learning mode is executed during a single iteration; and
-    :math:`N^T` is the total number of iterations to be executed.
-    From [Misitano2023a]_.
-
-
-The :class:`LEMOO <XLEMOO.LEMOO.LEMOO>` class takes many parameters, which are documented in the
-:ref:`API documentation<apidocs>`. These are:
-
-- :class:`EAParams <XLEMOO.LEMOO.EAParams>`: Parameters related to the evolutionary algorithm used in a Darwinian mode.
-- :class:`MLParams <XLEMOO.LEMOO.MLParams>`: Parameters related to the machine learning model used in a learning mode.
-- :class:`LEMParams <XLEMOO.LEMOO.LEMParams>`: Generic parameters for the learnable evolutionary method.
-
-Currently, a simple indicator based evolutionary multiobjective optimization algorithm has been implemented in 
-the XLEMOO framework. If one wishes to change the Darwinian or learning modes in the algorithm,
-the methods :class:`darwinian_mode <XLEMOO.LEMOO.LEMOO.darwinian_mode>` and 
-:class:`learning_mode <XLEMOO.LEMOO.LEMOO.learning_mode>` can be modified or overridden.
-
-To run the LEMOO method, either execute the :class:`run <XLEMOO.LEMOO.LEMOO.run>` method, which will
-utilize threshold values to determine when to switch between modes, or
-the :class:`run_iterations <XLEMOO.LEMOO.LEMOO.run_iterations>` method, which will run the LEMOO method for a set number of iterations
-in each mode.
-
-To get a solid grasp on how the framework works, it is recommended to check the basic usage example in the
-:ref:`Notebooks<notebooks>` section. :doc:`Especially this notebook <notebooks/Showcase>` given an example how an
-XLMEOO method can be used as an interactive multiobjective optimization method.
 
 Citation
 ========
