@@ -11,3 +11,4 @@ Contents:
    xlemoo_lemoo
    ruleset_interpreter
    tree_interpreter
+   utilities
