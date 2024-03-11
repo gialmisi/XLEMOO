@@ -86,4 +86,4 @@ firefox _build/html/index.html
 
 If you utilize the XLEMOO framework in your research, please cite the following publication:
 
-Giovanni Misitano. 2024. _Exploring the Explainable Aspects and Performance of a Learnable Evolutionary Multiobjective Optimization Method_. ACM Transactions on Evolutionary Learning Optimization 4 (1). https://doi.org/10.1145/3626104
+Giovanni Misitano. 2024. _Exploring the Explainable Aspects and Performance of a Learnable Evolutionary Multiobjective Optimization Method_. ACM Transactions on Evolutionary Learning Optimization. 4 (1). https://doi.org/10.1145/3626104
