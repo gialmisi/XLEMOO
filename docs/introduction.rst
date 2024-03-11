@@ -328,7 +328,7 @@ References
     References will be updated when published.
 
 .. [Misitano2023a]
-    Misitano, G. (2023). Exploring the Explainable Aspects and Performance of a Learnable Evolutionary Multiobjective Optimization Method. ACM Transactions on Evolutionary Learning and Optimization. To be published.
+    Misitano, G. (2023). Exploring the Explainable Aspects and Performance of a Learnable Evolutionary Multiobjective Optimization Method. ACM Transactions on Evolutionary Learning and Optimization. 4(1). https://doi.org/10.1145/3626104
 
 .. [Misitano2023b]
     Misitano, G. (2023). XLEMOO numerical experiment data. https://doi.org/10.5281/zenodo.8085637 
